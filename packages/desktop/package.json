@@ -1,0 +1,36 @@
+{
+  "name": "@qakit/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Desktop application layer of the QA automation kit: Electron apps driven through WebdriverIO and its Electron service.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@qakit/core": "workspace:*",
+    "@qakit/ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "@wdio/electron-service": ">=10.4.0",
+    "webdriverio": ">=9.31.0"
+  },
+  "peerDependenciesMeta": {
+    "@wdio/electron-service": { "optional": true },
+    "webdriverio": { "optional": true }
+  },
+  "devDependencies": {
+    "@wdio/electron-service": "10.4.0",
+    "webdriverio": "9.31.9"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

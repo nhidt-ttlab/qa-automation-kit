@@ -1,0 +1,23 @@
+-- The `Business Rule / Checklist` cell of the hardening-checklist row an assertion answers.
+--
+-- Mirrors the column the runner added to its own `test_run_checks` in
+-- tests/starlive-api-regression/docs/db/schema.sql, so `pnpm db:sync` carries it across untransformed,
+-- exactly like the four columns 20260909120000_check_csv_metadata added.
+--
+-- Why it earns a column of its own rather than being derived from `csv_expected`: the sheet states
+-- the rule and the expected result in two different cells, and they say different things. The rule
+-- is the spec's own sentence ("Tab Đề nghị thanh toán chỉ hiển thị khi HĐ ở trạng thái Đã xác
+-- nhận"); the expected result is what one invented data set should produce under it. A reviewer
+-- reading a checkpoint wants the rule, so the reporting UI renders this and keeps the expected cell
+-- behind it — which it can only do if the text is actually stored.
+--
+-- Open vocabulary, like the other four, so no CHECK. NULL both for assertions answering no
+-- checklist row and for sheets whose header carries no such column at all — the `Test Round` report
+-- sheets are genuinely like that.
+--
+-- Historical rows stay NULL until `pnpm db:backfill-csv-metadata` is re-run: that script fills only
+-- rows whose checklist columns are still entirely unset, so it will not revisit runs it has already
+-- backfilled. That is deliberate — re-reading today's CSV over an existing snapshot is the one
+-- thing the snapshot design forbids.
+ALTER TABLE "test_run_checks"
+  ADD COLUMN "csv_business_rule" TEXT;

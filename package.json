@@ -1,0 +1,31 @@
+{
+  "name": "qa-automation-kit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Reusable API + UI test automation kit: config-driven harness, MCP servers, reporting app and QA skills.",
+  "scripts": {
+    "build": "tsc -b packages/core packages/ui packages/desktop packages/runner packages/mcp-api packages/mcp-ui packages/locale-vi packages/cli",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "tsx --test \"packages/*/src/**/*.test.ts\" \"test/**/*.test.ts\"",
+    "schema:build": "tsx scripts/build-schema.ts",
+    "reporting:db:up": "docker compose -f apps/reporting-api/docker-compose.yml up -d --wait",
+    "reporting:db:down": "docker compose -f apps/reporting-api/docker-compose.yml down",
+    "reporting:generate": "pnpm --filter @qakit/reporting-api run db:generate",
+    "reporting:build": "pnpm --filter @qakit/reporting-shared --filter @qakit/reporting-api --filter @qakit/reporting-web run build",
+    "reporting:test": "pnpm --filter @qakit/reporting-api run test && pnpm --filter @qakit/reporting-web exec vitest run",
+    "reporting:type-check": "pnpm --filter @qakit/reporting-shared --filter @qakit/reporting-api --filter @qakit/reporting-web run type-check"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "playwright": "1.62.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "yaml": "^2.6.1",
+    "zod": "^3.23.8",
+    "zod-to-json-schema": "^3.24.1"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

@@ -1,0 +1,31 @@
+# PostgreSQL for the reporting API. The defaults match DATABASE_URL in .env.example:
+#   postgresql://qakit:qakit@localhost:5432/qakit_reporting
+#
+# From the kit root:  pnpm reporting:db:up   (then: pnpm --filter @qakit/reporting-api run db:deploy)
+#
+# A project deploying the kit usually copies this file into its own deployment folder and renames
+# the database, user, container and volume there. Every name can also be overridden from the
+# environment or from a .env next to this file.
+name: ${REPORTING_COMPOSE_PROJECT:-qakit-reporting}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: ${REPORTING_POSTGRES_CONTAINER:-qakit-reporting-postgres}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-qakit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qakit}
+      POSTGRES_DB: ${POSTGRES_DB:-qakit_reporting}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

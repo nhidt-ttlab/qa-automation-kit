@@ -1,0 +1,43 @@
+{
+  "name": "@qakit/reporting-shared",
+  "version": "0.1.0",
+  "description": "Shared types, DTOs, schemas, and constants for QA regression reporting",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/types/index.js"
+    },
+    "./dtos": {
+      "types": "./dist/dtos/index.d.ts",
+      "default": "./dist/dtos/index.js"
+    },
+    "./schemas": {
+      "types": "./dist/schemas/index.d.ts",
+      "default": "./dist/schemas/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "default": "./dist/errors/index.js"
+    },
+    "./constants": {
+      "types": "./dist/constants/index.d.ts",
+      "default": "./dist/constants/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

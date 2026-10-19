@@ -1,0 +1,29 @@
+{
+  "name": "@qakit/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Playwright browser layer of the QA automation kit: locators, route guards, diagnostics, network recording, UI checks.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@qakit/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "playwright": ">=1.62.0"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

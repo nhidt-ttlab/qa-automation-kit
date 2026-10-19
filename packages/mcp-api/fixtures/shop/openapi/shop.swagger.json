@@ -1,0 +1,60 @@
+{
+  "openapi": "3.0.1",
+  "info": { "title": "Shop API", "version": "v1" },
+  "paths": {
+    "/api/orders": {
+      "get": { "operationId": "listOrders", "summary": "List orders", "tags": ["Order"], "responses": { "200": { "description": "ok" } } },
+      "post": {
+        "operationId": "createOrder",
+        "summary": "Create an order",
+        "tags": ["Order"],
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateOrderDto" } } } },
+        "responses": { "200": { "description": "ok", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Order" } } } } }
+      }
+    },
+    "/api/orders/{id}": {
+      "get": {
+        "operationId": "getOrder",
+        "summary": "Get an order by id",
+        "tags": ["Order"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "ok", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Order" } } } } }
+      },
+      "delete": {
+        "operationId": "deleteOrder",
+        "summary": "Delete an order",
+        "tags": ["Order"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "deleted" } }
+      }
+    },
+    "/api/orders/search": {
+      "post": { "operationId": "searchOrders", "summary": "Search orders", "tags": ["Order"], "responses": { "200": { "description": "ok" } } }
+    },
+    "/api/customers": {
+      "get": { "operationId": "listCustomers", "summary": "List customers", "tags": ["Customer"], "responses": { "200": { "description": "ok" } } }
+    },
+    "/api/customers/{id}": {
+      "get": {
+        "operationId": "getCustomer",
+        "summary": "Get a customer by id",
+        "tags": ["Customer"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "ok" } }
+      }
+    },
+    "/api/products": {
+      "get": { "operationId": "listProducts", "summary": "List products", "tags": ["Product"], "responses": { "200": { "description": "ok" } } }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateOrderDto": {
+        "type": "object",
+        "required": ["customerId", "items"],
+        "properties": { "customerId": { "type": "string" }, "items": { "type": "array", "items": { "type": "string" } }, "note": { "type": "string" } }
+      },
+      "Order": { "type": "object", "properties": { "id": { "type": "string" }, "status": { "type": "string" } } }
+    }
+  }
+}

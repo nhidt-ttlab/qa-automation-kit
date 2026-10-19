@@ -1,0 +1,9 @@
+node_modules/
+.env
+db/
+reports/
+outputs/
+evidence/
+reviews/
+proposals/
+.cache/

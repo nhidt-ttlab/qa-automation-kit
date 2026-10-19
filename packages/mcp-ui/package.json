@@ -1,0 +1,35 @@
+{
+  "name": "@qakit/mcp-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "UI MCP server of the QA automation kit: a guarded browser an agent drives one test step at a time.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "qakit-mcp-ui": "./dist/bin.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@qakit/core": "workspace:*",
+    "@qakit/ui": "workspace:*",
+    "zod": "3.25.76"
+  },
+  "peerDependencies": {
+    "playwright": ">=1.62.0"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

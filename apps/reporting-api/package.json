@@ -1,0 +1,108 @@
+{
+  "name": "@qakit/reporting-api",
+  "version": "0.1.0",
+  "description": "NestJS backend for QA regression reporting",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "dev": "nest start --watch",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/src/main",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:sync": "ts-node --project scripts/tsconfig.json scripts/sync-from-sqlite.ts",
+    "db:backfill-csv-metadata": "ts-node --project scripts/tsconfig.json scripts/backfill-check-csv-metadata.ts",
+    "db:backfill-feature-id": "ts-node --project scripts/tsconfig.json scripts/backfill-testcase-feature-id.ts",
+    "db:backfill-resolution": "ts-node --project scripts/tsconfig.json scripts/backfill-resolution-issues.ts",
+    "db:export-resolution": "ts-node --project scripts/tsconfig.json scripts/export-resolution-issues.ts",
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
+  "dependencies": {
+    "@qakit/reporting-shared": "workspace:*",
+    "@nestjs/common": "11.2.3",
+    "@nestjs/config": "4.0.4",
+    "@nestjs/core": "11.2.3",
+    "@nestjs/platform-express": "11.2.3",
+    "@nestjs/swagger": "11.4.7",
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0",
+    "axios": "1.19.0",
+    "better-sqlite3": "12.11.1",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.15.1",
+    "dotenv": "17.4.2",
+    "pg": "8.23.0",
+    "prisma": "7.10.0",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2",
+    "swagger-ui-express": "5.0.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.6",
+    "@eslint/js": "9.39.5",
+    "@nestjs/cli": "11.0.24",
+    "@nestjs/schematics": "11.1.0",
+    "@nestjs/testing": "11.2.3",
+    "@types/express": "5.0.6",
+    "@types/jest": "30.0.0",
+    "@types/node": "24.13.3",
+    "@types/pg": "8.23.1",
+    "@types/supertest": "7.2.1",
+    "eslint": "9.39.5",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-prettier": "5.5.6",
+    "globals": "17.11.0",
+    "jest": "30.4.2",
+    "prettier": "3.9.6",
+    "source-map-support": "0.5.21",
+    "supertest": "7.2.2",
+    "ts-jest": "29.4.12",
+    "ts-loader": "9.6.2",
+    "ts-node": "10.9.2",
+    "tsconfig-paths": "4.2.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.68.0"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "module": "commonjs",
+            "moduleResolution": "node",
+            "resolvePackageJsonExports": false
+          }
+        }
+      ]
+    },
+    "moduleNameMapper": {
+      "^@qakit/reporting-shared$": "<rootDir>/../../reporting-shared/src/index.ts",
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  }
+}

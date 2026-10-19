@@ -1,0 +1,19 @@
+{
+  "name": "demo-shop-qa",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "doctor": "qakit doctor --config qakit.config.yaml",
+    "suite": "qakit suite --config qakit.config.yaml"
+  },
+  "dependencies": {
+    "@qakit/cli": "workspace:*",
+    "@qakit/core": "workspace:*",
+    "@qakit/runner": "workspace:*",
+    "@qakit/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

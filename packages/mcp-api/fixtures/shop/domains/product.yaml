@@ -1,0 +1,12 @@
+id: product
+displayName: Product
+description: The catalogue.
+apiSourceIds: [shop]
+tags: [catalogue]
+status: active
+confidence: confirmed
+capabilities:
+  - id: list-products
+    summary: List catalogue products
+    status: active
+    source: ProductController

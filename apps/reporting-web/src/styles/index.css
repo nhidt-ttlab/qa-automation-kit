@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Only element-level defaults live here. Anything rendered by MUI is styled from the theme
+ * (src/app/theme) — utility classes on MUI components share its specificity and would make
+ * the winner depend on stylesheet order.
+ */
+html,
+body {
+  @apply m-0 p-0;
+}
+
+body {
+  background-color: #f5f7fa;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbars tuned to the neutral scale so they stop reading as system chrome. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border: 3px solid transparent;
+  border-radius: 8px;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* Plain anchors (MUI Link and Breadcrumbs bring their own colours). */
+a {
+  color: #2563eb;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+a:where(:hover) {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Card utility */
+.card {
+  @apply bg-white rounded-xl border border-gray-200 p-6 mb-4;
+}
+
+/* Alerts */
+.alert {
+  @apply p-4 rounded-lg mb-4 border-l-4;
+}
+
+.alert.error {
+  @apply bg-red-50 text-red-900 border-red-500;
+}
+
+.alert.success {
+  @apply bg-green-50 text-green-900 border-green-500;
+}
+
+.alert.warning {
+  @apply bg-yellow-50 text-yellow-900 border-yellow-500;
+}
+
+.alert.info {
+  @apply bg-blue-50 text-blue-900 border-blue-500;
+}
+
+/* Loading spinner */
+.loading {
+  @apply inline-block w-5 h-5 border-2 border-gray-300 border-t-primary-600 rounded-full;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

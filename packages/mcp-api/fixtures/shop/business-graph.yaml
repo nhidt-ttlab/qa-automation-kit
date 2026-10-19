@@ -1,0 +1,13 @@
+edges:
+  - from: order
+    to: customer
+    relation: requires
+    level: domain
+    description: An order names the customer placing it.
+    confidence: confirmed
+  - from: order
+    to: product
+    relation: requires
+    level: domain
+    description: An order lists catalogue products.
+    confidence: confirmed

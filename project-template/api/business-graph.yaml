@@ -1,0 +1,3 @@
+# Cross-domain dependency edges, e.g. an order requires a customer:
+#   - { from: order, to: customer, relation: requires, level: domain, description: ..., confidence: confirmed }
+edges: []

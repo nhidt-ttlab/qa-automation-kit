@@ -1,0 +1,16 @@
+id: customer
+displayName: Customer
+description: The parties that place orders.
+apiSourceIds: [shop]
+tags: [crm]
+status: active
+confidence: confirmed
+capabilities:
+  - id: manage-customers
+    summary: Look up customers
+    status: active
+    source: CustomerController
+  - id: customer-documents
+    summary: Find customer related documents
+    status: planned
+    notes: Declared in the service interface but never exposed.

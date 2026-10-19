@@ -1,0 +1,48 @@
+{
+  "name": "@qakit/reporting-web",
+  "version": "0.1.0",
+  "description": "React frontend for QA regression reporting",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx",
+    "format": "prettier --write \"src/**\"",
+    "test": "vitest",
+    "test:ui": "vitest --ui"
+  },
+  "dependencies": {
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.1",
+    "@qakit/reporting-shared": "workspace:*",
+    "@mui/icons-material": "5.18.0",
+    "@mui/material": "5.18.0",
+    "axios": "1.19.0",
+    "classnames": "2.5.1",
+    "mobx": "6.16.1",
+    "mobx-react-lite": "4.1.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.30.6"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "14.3.1",
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "@vitest/ui": "1.6.1",
+    "autoprefixer": "10.5.4",
+    "eslint": "8.57.1",
+    "eslint-plugin-react": "7.37.5",
+    "postcss": "8.5.26",
+    "prettier": "3.9.6",
+    "tailwindcss": "3.4.19",
+    "typescript": "5.9.3",
+    "@vitejs/plugin-react": "4.7.0",
+    "vite": "5.4.21",
+    "vitest": "1.6.1",
+    "jsdom": "25.0.1"
+  }
+}

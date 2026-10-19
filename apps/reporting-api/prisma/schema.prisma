@@ -1,0 +1,597 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  runtime      = "nodejs"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Mirrors the runner run-store schema (sql/schema.sql in @qakit/core).
+// Tables intentionally omitted here:
+// - review_records
+// - proposal_records
+// Those remain file-backed in the SQL design and are not part of the DB schema yet.
+
+model TestCase {
+  id           String   @id
+  scenarioKey  String   @unique @map("scenario_key")
+  title        String
+  objective    String?
+  impactedArea String?  @map("impacted_area")
+  // Grouping, stamped by the runner at persist time from the scenario key alone:
+  // `module` is the suite folder (`purchase-order`, `warehouse`, ...), `domain` the documentation
+  // module (`don-hang`, `kho`, `kho-bao-cao-kho`, ...). `domain` is strictly finer — `warehouse`
+  // splits into two documentation modules — so it is what the feature filter uses.
+  // NULL `module` means the producer was not a registered scenario (a probe, an MCP session).
+  module       String?
+  domain       String?
+  // ERP Feature List id ("QLDN-VT-04" = Cài đặt sinh mã), declared per scenario as
+  // `const FEATURE_ID` and copied verbatim from the runner. It numbers a SCREEN in the business
+  // spec, not a testcase, so it is what reconciles a run against the Feature List workbook.
+  // NULL for every scenario that has not declared one — most of them today.
+  featureId    String?  @map("feature_id")
+  owner        String?
+  status       String   @default("active")
+  runType      String   @default("api") @map("run_type")
+  versionLabel String?  @map("version_label")
+  tags         Json?
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  testRuns               TestRun[]
+  defectSignatures       DefectSignature[]
+  resolutionObservations ResolutionObservation[]
+
+  @@unique([id, scenarioKey])
+  @@index([status])
+  @@index([runType])
+  @@index([module])
+  @@index([domain])
+  @@index([featureId])
+  @@map("test_cases")
+}
+
+model TestRun {
+  id                 String    @id
+  testCaseId         String    @map("test_case_id")
+  scenarioKey        String    @map("scenario_key")
+  // Denormalized from TestCase for the same reason scenarioKey is: filtering and grouping runs by
+  // module/feature without a join, and a run keeps the grouping it had when it executed.
+  module             String?
+  domain             String?
+  environment        String
+  dryRun             Boolean   @default(false) @map("dry_run")
+  result             String
+  runType            String    @default("api") @map("run_type")
+  startedAt          DateTime  @map("started_at")
+  finishedAt         DateTime? @map("finished_at")
+  durationMs         Int?      @map("duration_ms")
+  executedBy         String?   @map("executed_by")
+  gitCommit          String?   @map("git_commit")
+  gitBranch          String?   @map("git_branch")
+  businessScenario   String?   @map("business_scenario")
+  severity           String?
+  reproducibility    String?
+  defectStatement    String?   @map("defect_statement")
+  blockedReason      String?   @map("blocked_reason")
+  errorSummary       String?   @map("error_summary")
+  conclusion         String?
+  overviewKeyData    Json?     @map("overview_key_data")
+  overviewHighlights Json?     @map("overview_highlights")
+  payloads           Json?
+  tags               Json?
+  customData         Json?     @map("custom_data")
+  reportModel        Json?     @map("report_model")
+  // Normalized UiEvidenceDto, written by the sync from the runner's evidence manifest.
+  // NULL on API runs, and on UI runs whose manifest is missing from disk.
+  uiEvidence         Json?     @map("ui_evidence")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  testCase                   TestCase                @relation(fields: [testCaseId, scenarioKey], references: [id, scenarioKey])
+  checks                     TestRunCheck[]
+  steps                      TestRunStep[]
+  evidence                   TestRunEvidence[]
+  relatedEntities            TestRunRelatedEntity[]
+  artifacts                  Artifact[]
+  defectObservations         DefectObservation[]
+  defectSignaturesFirstSeen  DefectSignature[]       @relation("FirstObservedRun")
+  defectSignaturesLastSeen   DefectSignature[]       @relation("LastObservedRun")
+  bugLinksCreatedFromThisRun BugLink[]               @relation("BugLinksCreatedFromRun")
+  resolutionObservations     ResolutionObservation[]
+  resolutionIssuesVerified   ResolutionIssue[]       @relation("ResolutionVerificationRun")
+
+  @@index([testCaseId, startedAt])
+  @@index([result])
+  @@index([environment])
+  @@index([startedAt])
+  @@index([runType])
+  @@index([module])
+  @@index([domain])
+  @@map("test_runs")
+}
+
+model TestRunCheck {
+  id       Int     @id @default(autoincrement())
+  runId    String  @map("run_id")
+  sequence Int     @map("seq")
+  testId   String? @map("test_id")
+  label    String
+  expected Json?
+  actual   Json?
+  passed   Boolean
+
+  // Hardening-checklist snapshot, copied from the runner's `test_run_checks` row as-is.
+  //
+  // A SNAPSHOT rather than a reference to a checklist table: the run stores the sheet text it
+  // actually saw, so editing the CSV later cannot rewrite what a historical run reported. Nothing
+  // here participates in a verdict — `expected`/`actual` above stay the only oracle.
+  //
+  // NULL on every assertion that answers no checklist row, which is most of them. `csvPriority` is
+  // additionally NULL for sheets that carry no Priority column at all.
+  csvChecklistId String? @map("csv_checklist_id")
+  csvTestcaseId  String? @map("csv_testcase_id")
+  csvExpected    String? @map("csv_expected")
+  // The rule the row exists to check, in the spec's own words — what a reviewer reads first, where
+  // `csvExpected` says what one invented data set should produce under that rule. NULL for sheets
+  // whose header carries no such column, as well as for unmapped assertions.
+  csvBusinessRule String? @map("csv_business_rule")
+  csvPriority    String? @map("csv_priority")
+
+  testRun TestRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, sequence])
+  @@index([runId])
+  @@index([csvChecklistId, csvTestcaseId])
+  @@map("test_run_checks")
+}
+
+model TestRunStep {
+  id         Int     @id @default(autoincrement())
+  runId      String  @map("run_id")
+  sequence   Int     @map("seq")
+  title      String
+  ok         Boolean
+  httpStatus Int?    @map("http_status")
+  details    Json?
+
+  testRun TestRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, sequence])
+  @@index([runId])
+  @@map("test_run_steps")
+}
+
+model TestRunEvidence {
+  id                   Int     @id @default(autoincrement())
+  runId                String  @map("run_id")
+  sequence             Int     @map("seq")
+  method               String
+  endpoint             String
+  purpose              String?
+  keyInput             String? @map("key_input")
+  httpStatus           Int?    @map("http_status")
+  resultClassification String? @map("result_classification")
+  collapsedCount       Int     @default(1) @map("collapsed_count")
+  isKeyEvidence        Boolean @default(false) @map("is_key_evidence")
+  artifactId           Int?    @map("artifact_id")
+
+  testRun  TestRun   @relation(fields: [runId], references: [id], onDelete: Cascade)
+  artifact Artifact? @relation(fields: [runId, artifactId], references: [runId, id])
+
+  @@unique([runId, sequence])
+  @@index([runId])
+  @@index([runId, isKeyEvidence])
+  @@map("test_run_evidence")
+}
+
+model TestRunRelatedEntity {
+  id          Int     @id @default(autoincrement())
+  runId       String  @map("run_id")
+  entityType  String  @map("entity_type")
+  entityId    String  @map("entity_id")
+  entityLabel String? @map("entity_label")
+
+  testRun TestRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, entityType, entityId])
+  @@index([entityType, entityId])
+  @@map("test_run_related_entities")
+}
+
+model Artifact {
+  id          Int      @id @default(autoincrement())
+  runId       String   @map("run_id")
+  kind        String
+  storageType String   @default("file") @map("storage_type")
+  path        String?
+  blob        Bytes?
+  externalUrl String?  @map("external_url")
+  contentHash String?  @map("content_hash")
+  sizeBytes   Int?     @map("size_bytes")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  testRun  TestRun           @relation(fields: [runId], references: [id], onDelete: Cascade)
+  evidence TestRunEvidence[]
+
+  @@unique([runId, id])
+  @@index([runId, kind])
+  @@map("artifacts")
+}
+
+model DefectSignature {
+  id                  Int      @id @default(autoincrement())
+  signatureHash       String   @unique @map("signature_hash")
+  scenarioKey         String   @map("scenario_key")
+  title               String
+  severity            String?
+  probableFailingRule String?  @map("probable_failing_rule")
+  suspectedComponent  String?  @map("suspected_component")
+  regressionNote      String?  @map("regression_note")
+  status              String   @default("draft")
+  firstObservedRunId  String?  @map("first_observed_run_id")
+  lastObservedRunId   String?  @map("last_observed_run_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  testCase         TestCase            @relation(fields: [scenarioKey], references: [scenarioKey])
+  firstObservedRun TestRun?            @relation("FirstObservedRun", fields: [firstObservedRunId], references: [id])
+  lastObservedRun  TestRun?            @relation("LastObservedRun", fields: [lastObservedRunId], references: [id])
+  observations     DefectObservation[]
+  bugLinks         BugLink[]
+  resolutionIssues ResolutionIssue[]
+
+  @@unique([id, scenarioKey])
+  @@index([status])
+  @@map("defect_signatures")
+}
+
+model DefectObservation {
+  id                Int      @id @default(autoincrement())
+  defectSignatureId Int      @map("defect_signature_id")
+  runId             String   @map("run_id")
+  defectStatement   String?  @map("defect_statement")
+  observedAt        DateTime @default(now()) @map("observed_at")
+
+  defectSignature DefectSignature @relation(fields: [defectSignatureId], references: [id])
+  testRun         TestRun         @relation(fields: [runId], references: [id])
+
+  @@unique([defectSignatureId, runId])
+  @@index([defectSignatureId])
+  @@index([runId])
+  @@map("defect_observations")
+}
+
+model BugLink {
+  id                Int      @id @default(autoincrement())
+  defectSignatureId Int      @map("defect_signature_id")
+  createdFromRunId  String?  @map("created_from_run_id")
+  redmineIssueId    Int      @map("redmine_issue_id")
+  redmineProject    String?  @map("redmine_project")
+  redmineUrl        String?  @map("redmine_url")
+  linkType          String   @default("created_from_run") @map("link_type")
+  createdBy         String?  @map("created_by")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  defectSignature DefectSignature @relation(fields: [defectSignatureId], references: [id])
+  createdFromRun  TestRun?        @relation("BugLinksCreatedFromRun", fields: [createdFromRunId], references: [id])
+
+  @@unique([defectSignatureId, redmineIssueId])
+  @@index([redmineIssueId])
+  @@index([defectSignatureId])
+  @@map("bug_links")
+}
+
+// ---------------------------------------------------------------------------
+// Resolution Queue
+//
+// Canonical grouping of *unresolved* evidence — BLOCKED/ERROR runs and NOT_EVALUATED checks —
+// with the human workflow that resolves it. Owned entirely by this database: nothing here is
+// ever written back to the runner SQLite file, and `db:sync` may only touch the fields marked
+// "sync-owned" below. See docs/resolution-queue.md.
+//
+// Vocabularies are String + CHECK (added in the companion constraints migration), not Prisma
+// enums, matching every other enum-like column in this schema.
+// ---------------------------------------------------------------------------
+
+model ResolutionIssue {
+  id Int @id @default(autoincrement())
+
+  // --- identity (sync-owned) ---------------------------------------------
+  // Stable machine key. `<domain>:BL-03` when the evidence names a blocker code, else
+  // `auto:<domain>:<sha256-16>` over domain + scenario + assertion + normalized reason.
+  importKey  String @unique @map("import_key")
+  // Human-readable, deliberately NOT unique: two fallback issues in one scenario can share a
+  // readable label while their import keys differ.
+  displayKey String @map("display_key")
+
+  // --- classification and workflow (reporting-owned) ----------------------
+  kind           String @default("UNCLASSIFIED")
+  workflowStatus String @default("OPEN") @map("workflow_status")
+
+  title         String
+  // Derived from the evidence by sync; refreshed as new observations arrive.
+  sourceSummary String? @map("source_summary")
+  // Written by a human. Sync never touches it.
+  userSummary   String? @map("user_summary")
+  owner         String?
+  priority      String?
+
+  decision   String?
+  decisionBy String?   @map("decision_by")
+  decisionAt DateTime? @map("decision_at")
+
+  resolution     String?
+  resolutionType String?   @map("resolution_type")
+  resolvedBy     String?   @map("resolved_by")
+  resolvedAt     DateTime? @map("resolved_at")
+
+  verificationNote  String?   @map("verification_note")
+  verifiedBy        String?   @map("verified_by")
+  verifiedAt        DateTime? @map("verified_at")
+  // The rerun the verification rests on. NULL for an audited manual override.
+  verificationRunId String?   @map("verification_run_id")
+
+  // --- links (reporting-owned) -------------------------------------------
+  defectSignatureId Int? @map("defect_signature_id")
+
+  // --- grouping and occurrence statistics (sync-owned) --------------------
+  module                String?
+  domain                String?
+  // Denormalized because a distinct-count over observations cannot be expressed as a Prisma
+  // `_count` and the list view needs both numbers on every row.
+  observationCount      Int     @default(0) @map("observation_count")
+  affectedTestCaseCount Int     @default(0) @map("affected_test_case_count")
+  // Times new evidence arrived after a verification. 0 for a never-verified issue.
+  recurrenceCount       Int     @default(0) @map("recurrence_count")
+
+  firstSeenAt DateTime @map("first_seen_at")
+  lastSeenAt  DateTime @map("last_seen_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  defectSignature DefectSignature? @relation(fields: [defectSignatureId], references: [id])
+  verificationRun TestRun?         @relation("ResolutionVerificationRun", fields: [verificationRunId], references: [id])
+
+  observations ResolutionObservation[]
+  comments     ResolutionComment[]
+  events       ResolutionEvent[]
+  redmineLinks ResolutionRedmineLink[]
+
+  @@index([workflowStatus])
+  @@index([kind])
+  @@index([owner])
+  @@index([priority])
+  @@index([lastSeenAt])
+  @@index([firstSeenAt])
+  @@index([displayKey])
+  @@index([domain])
+  @@index([module])
+  @@index([defectSignatureId])
+  @@map("resolution_issues")
+}
+
+model ResolutionObservation {
+  id                Int    @id @default(autoincrement())
+  resolutionIssueId Int    @map("resolution_issue_id")
+  runId             String @map("run_id")
+  testCaseId        String @map("test_case_id")
+  // Plain column, no composite FK to test_cases(id, scenario_key): the run already carries that
+  // integrity, and a second composite FK here would fail during sync whenever a scenario key is
+  // re-pointed at a different test case id.
+  scenarioKey       String @map("scenario_key")
+
+  // Check-level identity. All NULL for a run-level blocker — a BLOCKED run may have no checks.
+  checkSequence Int?    @map("check_sequence")
+  checkTestId   String? @map("check_test_id")
+  checkLabel    String? @map("check_label")
+
+  // What distinguishes two unresolved conditions inside the same run:
+  // `check:<seq>` | `run:blocked` | `run:error`.
+  observationKey String @map("observation_key")
+  observedResult String @map("observed_result")
+  // Verbatim runner text, JSON-decoded but not otherwise altered.
+  rawReason      String @map("raw_reason")
+
+  observedAt DateTime @map("observed_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  resolutionIssue ResolutionIssue @relation(fields: [resolutionIssueId], references: [id], onDelete: Cascade)
+  testRun         TestRun         @relation(fields: [runId], references: [id], onDelete: Cascade)
+  testCase        TestCase        @relation(fields: [testCaseId], references: [id])
+
+  @@unique([resolutionIssueId, runId, observationKey])
+  @@index([resolutionIssueId])
+  @@index([runId])
+  @@index([testCaseId])
+  @@index([scenarioKey])
+  @@index([observedResult])
+  @@map("resolution_observations")
+}
+
+model ResolutionComment {
+  id                Int      @id @default(autoincrement())
+  resolutionIssueId Int      @map("resolution_issue_id")
+  body              String
+  author            String
+  // Append-only today. The column exists so that adding an edit feature stays honest rather than
+  // silently rewriting history; every edit must also write a COMMENT_EDITED event.
+  edited            Boolean  @default(false)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  resolutionIssue ResolutionIssue @relation(fields: [resolutionIssueId], references: [id], onDelete: Cascade)
+
+  @@index([resolutionIssueId, createdAt])
+  @@map("resolution_comments")
+}
+
+model ResolutionEvent {
+  id                Int      @id @default(autoincrement())
+  resolutionIssueId Int      @map("resolution_issue_id")
+  action            String
+  previousStatus    String?  @map("previous_status")
+  newStatus         String?  @map("new_status")
+  actor             String
+  note              String?
+  metadata          Json?
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  resolutionIssue ResolutionIssue @relation(fields: [resolutionIssueId], references: [id], onDelete: Cascade)
+
+  @@index([resolutionIssueId, createdAt])
+  @@index([action])
+  @@map("resolution_events")
+}
+
+// Separate from bug_links on purpose: that table's defect_signature_id is NOT NULL and is guarded
+// by trg_bug_links_validate_scenario, so widening it would mean relaxing a constraint that exists
+// to protect the defect workflow. A resolution issue links to Redmine on its own terms.
+model ResolutionRedmineLink {
+  id                Int      @id @default(autoincrement())
+  resolutionIssueId Int      @map("resolution_issue_id")
+  redmineIssueId    Int      @map("redmine_issue_id")
+  redmineProject    String?  @map("redmine_project")
+  redmineUrl        String?  @map("redmine_url")
+  linkType          String   @default("manually_linked") @map("link_type")
+  createdBy         String?  @map("created_by")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  resolutionIssue ResolutionIssue @relation(fields: [resolutionIssueId], references: [id], onDelete: Cascade)
+
+  @@unique([resolutionIssueId, redmineIssueId])
+  @@index([redmineIssueId])
+  @@map("resolution_redmine_links")
+}
+
+// ---------------------------------------------------------------------------
+// Regression Jobs
+//
+// One row per batch the web UI asked the runner to execute. This is the only table in this
+// schema whose rows describe an action this API *takes* rather than evidence the runner
+// produced — every other table here is a read-only projection of what already happened.
+//
+// The row is the audit record: `argv` and `env_patch` hold the exact command that was spawned,
+// so "what did this job actually run" stays answerable months later without reading a log.
+//
+// Deliberately NO foreign key to test_runs in either direction. A job describes an action and a
+// run describes evidence; linking them would invite deleting evidence when a job row is pruned,
+// and a job's runs are already findable by time and scenario.
+//
+// Vocabularies are String + CHECK in the companion constraints migration, not Prisma enums,
+// matching ResolutionIssue and every other enum-like column here. Values live in
+// apps/reporting-shared/src/constants.ts.
+// ---------------------------------------------------------------------------
+
+model RegressionJob {
+  id Int @id @default(autoincrement())
+
+  status String @default("QUEUED")
+
+  /// The single-job mutex, expressed as data rather than as a lock the API has to remember.
+  ///
+  /// `true` while the job is in a non-terminal status, NULL once it ends — and because Postgres
+  /// lets a unique index hold unlimited NULLs, `@unique` on a nullable Boolean means "at most one
+  /// active job, ever, across every process". A second POST fails with P2002, which the service
+  /// turns into a ConflictError carrying the active job's id. Deliberately not a lock file or an
+  /// in-memory flag: a PM2 restart forgets both, and this survives one.
+  ///
+  /// Making this a real FIFO queue later means dropping QUEUED from the companion CHECK so a
+  /// queued row no longer holds the slot, and adding a dispatcher. Nothing else here moves.
+  activeSlot Boolean? @unique @map("active_slot")
+
+  // --- The request, as the user expressed it (immutable after create) ---------------------
+  requestedBy String @map("requested_by")
+
+  /// The runner's own batch label, recomputed by the argv builder so the summary file this job
+  /// produces (`reports/_batches/<iso>-<label>.md`) can be found by name.
+  label String
+
+  kind        String?
+  environment String  @default("qa")
+
+  /// 'run' | 'all' | NULL. 'all' does NOT become the runner's `--clean-all`: that flag ignores
+  /// the selection and also deletes evidence/mcp-sessions, reports/_batches and loose outputs
+  /// files. The API performs its own wipe instead — see runner-workspace.util.ts.
+  cleanScope String? @map("clean_scope")
+
+  dataMode String @default("existing") @map("data_mode")
+
+  /// Drives the runner's write switch (RUNNER_WRITES_ENV) in the child env. When false the API passes '0'
+  /// explicitly, because the runner's own .env sets it to 1 and its loader only fills unset keys.
+  writeMode Boolean @default(false) @map("write_mode")
+
+  bail Boolean @default(false)
+
+  /// Tri-state on purpose: NULL means "say nothing", and the runner's own default applies — which
+  /// flips with write mode. Storing it nullable is what lets both `--cleanup` and `--no-cleanup`
+  /// be absent from the argv.
+  cleanup Boolean?
+
+  headed     Boolean @default(false)
+  uiSlowMoMs Int?    @map("ui_slowmo_ms")
+  grep       String?
+
+  /// string[]. JSON rather than columns because both are repeatable lists nothing filters or
+  /// joins on — the same call TestRun.tags and overviewKeyData already make.
+  modules     Json?
+  testCaseIds Json? @map("test_case_ids")
+
+  // --- The command, as it was actually spawned (the audit record) -------------------------
+  /// string[] — the argv passed to run-suite.ts, excluding node, the tsx cli and the script path.
+  argv Json
+
+  /// Record<string,string>. Only the deliberate patch (the write switch, NO_COLOR),
+  /// never the inherited environment, which carries DATABASE_URL and REDMINE_API_KEY.
+  envPatch Json @map("env_patch")
+
+  runnerRoot String @map("runner_root")
+
+  // --- Process ----------------------------------------------------------------------------
+  pid               Int?
+  exitCode          Int?      @map("exit_code")
+  signal            String?
+  cancelRequestedAt DateTime? @map("cancel_requested_at")
+  cancelRequestedBy String?   @map("cancel_requested_by")
+
+  // --- Log --------------------------------------------------------------------------------
+  /// Relative to JOB_LOG_STORAGE_PATH, mirroring how artifacts.path stays runner-relative:
+  /// moving the storage root must not orphan every historical row. Always `job-<id>.jsonl`.
+  logPath String @map("log_path")
+
+  /// Lines written so far, which is also the sequence number of the last line. SSE reconnect asks
+  /// for everything after a sequence, so the two must never disagree.
+  logLineCount Int @default(0) @map("log_line_count")
+
+  // --- Outcome ----------------------------------------------------------------------------
+  /// From the `--list` preview taken at create time, before anything was spawned. A job whose
+  /// selector matches nothing is rejected there rather than left to exit 1 twenty minutes later.
+  selectedCount Int? @map("selected_count")
+
+  passCount    Int? @map("pass_count")
+  blockedCount Int? @map("blocked_count")
+  failCount    Int? @map("fail_count")
+
+  /// Runner-relative path parsed out of the batch tail's `Summary: <abs path>` line.
+  summaryPath  String? @map("summary_path")
+  errorSummary String? @map("error_summary")
+
+  // --- Sync (attempted after every batch, whatever its verdict) ---------------------------
+  syncStatus     String? @map("sync_status")
+  syncedRunCount Int?    @map("synced_run_count")
+
+  queuedAt   DateTime  @default(now()) @map("queued_at")
+  startedAt  DateTime? @map("started_at")
+  finishedAt DateTime? @map("finished_at")
+  durationMs Int?      @map("duration_ms")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([queuedAt])
+  @@index([requestedBy])
+  @@map("regression_jobs")
+}

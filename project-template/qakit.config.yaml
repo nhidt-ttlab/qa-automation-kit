@@ -1,0 +1,66 @@
+# yaml-language-server: $schema={{kitDir}}/schema/qakit.config.schema.json
+#
+# QA automation kit settings for {{project}}. Every path is relative to this file.
+# Check it with: npx qakit doctor --config qakit.config.yaml
+project: {{project}}
+environment: local
+locale: {{locale}}
+# Code the config cannot express: browser sign-in, report wording, data providers.
+adapter: ./src/adapter/index.ts
+envFiles: [.env]
+
+# One entry per business module: the join key between spec docs, step docs, suites and reports.
+modules:
+  - { id: example, tcPrefix: EX, suite: example, description: Replace with your first business module }
+
+# The backends. `openapi` feeds the API MCP server and `qakit api docgen`.
+apiSources:
+  app:
+    description: The application backend.
+    repository: {{project}}-api
+    baseUrl: { env: {{PROJECT_ENV}}_API_URL, default: http://localhost:3000 }
+    openapi: { path: /openapi.json, fileEnv: {{PROJECT_ENV}}_SPEC_FILE }
+    auth:
+      type: jwt-login
+      loginPath: /auth/login
+      tokenJsonPath: token
+      usernameEnv: {{PROJECT_ENV}}_USERNAME
+      passwordEnv: {{PROJECT_ENV}}_PASSWORD
+
+api:
+  domainsDir: api/domains
+  businessGraph: api/business-graph.yaml
+  # The API MCP server refuses writes unless this is 1.
+  allowWritesEnv: {{PROJECT_ENV}}_ALLOW_WRITES
+
+web:
+  baseUrl: { env: {{PROJECT_ENV}}_WEB_URL, default: http://localhost:3000 }
+  loginPath: /login
+  authMode: form
+  apiSource: app
+  # host[:port] of every origin the page may reach, including API hosts.
+  allowedHosts: [localhost:3000]
+  widgets: [html]
+
+safety:
+  # Browser runs block every non-GET request unless this is 1.
+  allowWritesEnv: {{PROJECT_ENV}}_ALLOW_WRITES
+  testDataMarker: QA_AUTOTEST
+
+ids:
+  testCase: '^TC-[A-Z0-9]+-[A-Z]\d+[a-z]?$'
+
+paths:
+  featureDocs: docs/features
+  steps: test-steps
+  suites: src/suites
+  checklists: checklists
+  knowledge: .qakit/knowledge
+
+reporting:
+  sqlite: db/runs.db
+  tracker: { type: none }
+
+mcp:
+  apiServerName: {{project}}-api
+  uiServerName: {{project}}-ui

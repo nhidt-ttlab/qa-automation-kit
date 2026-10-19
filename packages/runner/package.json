@@ -1,0 +1,35 @@
+{
+  "name": "@qakit/runner",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Scenario runner of the QA automation kit: defineApiScenario / defineUiScenario, discovery under paths.suites, reports and the run store.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "qakit-suite": "./dist/bin.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@qakit/core": "workspace:*",
+    "@qakit/desktop": "workspace:*",
+    "@qakit/ui": "workspace:*",
+    "tsx": "^4.19.2"
+  },
+  "peerDependencies": {
+    "playwright": ">=1.62.0"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

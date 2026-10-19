@@ -1,0 +1,1027 @@
+{
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "environment": {
+      "type": "string",
+      "minLength": 1,
+      "default": "default"
+    },
+    "locale": {
+      "type": "string",
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+      "default": "en"
+    },
+    "adapter": {
+      "type": "string",
+      "minLength": 1
+    },
+    "envFiles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": [
+        ".env"
+      ]
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "docSlug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "featureCodes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "default": []
+          },
+          "tcPrefix": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]+$"
+          },
+          "stepDir": {
+            "type": "string",
+            "minLength": 1
+          },
+          "suite": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "apiSources": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "baseUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "env": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  },
+                  "default": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          },
+          "openapi": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "env": {
+                        "type": "string",
+                        "pattern": "^[A-Z_][A-Z0-9_]*$"
+                      },
+                      "default": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "fileEnv": {
+                "type": "string",
+                "pattern": "^[A-Z_][A-Z0-9_]*$"
+              },
+              "cacheTtlSeconds": {
+                "type": "integer",
+                "minimum": 0,
+                "default": 3600
+              }
+            },
+            "additionalProperties": false
+          },
+          "auth": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "none"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "static-bearer"
+                  },
+                  "tokenEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  }
+                },
+                "required": [
+                  "type",
+                  "tokenEnv"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "api-key"
+                  },
+                  "keyEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  },
+                  "in": {
+                    "type": "string",
+                    "enum": [
+                      "header",
+                      "query"
+                    ],
+                    "default": "header"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "type",
+                  "keyEnv",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "oauth2-password"
+                  },
+                  "tokenPath": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "clientId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "clientSecretEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  },
+                  "scope": {
+                    "type": "string"
+                  },
+                  "usernameEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  },
+                  "passwordEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  },
+                  "staticTokenEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  }
+                },
+                "required": [
+                  "type",
+                  "tokenPath",
+                  "clientId",
+                  "usernameEnv",
+                  "passwordEnv"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "oidc-code"
+                  },
+                  "issuer": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "env": {
+                            "type": "string",
+                            "pattern": "^[A-Z_][A-Z0-9_]*$"
+                          },
+                          "default": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  "clientId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "clientSecretEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  },
+                  "redirectUri": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scope": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "env": {
+                            "type": "string",
+                            "pattern": "^[A-Z_][A-Z0-9_]*$"
+                          },
+                          "default": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    ],
+                    "default": "openid"
+                  },
+                  "authorizeParams": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "env": {
+                              "type": "string",
+                              "pattern": "^[A-Z_][A-Z0-9_]*$"
+                            },
+                            "default": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "default": {}
+                  },
+                  "usernameEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  },
+                  "passwordEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  },
+                  "staticTokenEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  }
+                },
+                "required": [
+                  "type",
+                  "clientId",
+                  "redirectUri",
+                  "usernameEnv",
+                  "passwordEnv"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "jwt-login"
+                  },
+                  "loginPath": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "usernameField": {
+                    "type": "string",
+                    "default": "username"
+                  },
+                  "passwordField": {
+                    "type": "string",
+                    "default": "password"
+                  },
+                  "tokenJsonPath": {
+                    "type": "string",
+                    "default": "token"
+                  },
+                  "refreshTokenJsonPath": {
+                    "type": "string"
+                  },
+                  "expiresInJsonPath": {
+                    "type": "string"
+                  },
+                  "usernameEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  },
+                  "passwordEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  },
+                  "staticTokenEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  }
+                },
+                "required": [
+                  "type",
+                  "loginPath",
+                  "usernameEnv",
+                  "passwordEnv"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "cookie-session"
+                  },
+                  "loginPath": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "usernameField": {
+                    "type": "string",
+                    "default": "username"
+                  },
+                  "passwordField": {
+                    "type": "string",
+                    "default": "password"
+                  },
+                  "usernameEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  },
+                  "passwordEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  }
+                },
+                "required": [
+                  "type",
+                  "loginPath",
+                  "usernameEnv",
+                  "passwordEnv"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "reuse"
+                  },
+                  "from": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                  },
+                  "staticTokenEnv": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  }
+                },
+                "required": [
+                  "type",
+                  "from"
+                ],
+                "additionalProperties": false
+              }
+            ],
+            "default": {
+              "type": "none"
+            }
+          },
+          "description": {
+            "type": "string"
+          },
+          "repository": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mcpId": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          }
+        },
+        "required": [
+          "baseUrl"
+        ],
+        "additionalProperties": false
+      },
+      "propertyNames": {
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      },
+      "default": {}
+    },
+    "api": {
+      "type": "object",
+      "properties": {
+        "domainsDir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "businessGraph": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fieldDependencies": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cacheDir": {
+          "type": "string",
+          "default": ".cache/openapi"
+        },
+        "actionTtlSeconds": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "default": 1800
+        },
+        "allowWrites": {
+          "type": "boolean",
+          "default": false
+        },
+        "allowWritesEnv": {
+          "type": "string",
+          "pattern": "^[A-Z_][A-Z0-9_]*$"
+        },
+        "readOnlyPostPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "destructiveOperations": {
+          "type": "string",
+          "default": "delete|remove|cancel|approve|reject|submit|void|purge"
+        },
+        "docs": {
+          "type": "object",
+          "properties": {
+            "swaggerDir": {
+              "type": "string",
+              "default": "api/swaggers"
+            },
+            "outputDir": {
+              "type": "string",
+              "default": "api/generated"
+            },
+            "domainFileMapping": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false,
+          "default": {}
+        }
+      },
+      "additionalProperties": false,
+      "default": {}
+    },
+    "web": {
+      "type": "object",
+      "properties": {
+        "baseUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "env": {
+                  "type": "string",
+                  "pattern": "^[A-Z_][A-Z0-9_]*$"
+                },
+                "default": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "loginPath": {
+          "type": "string",
+          "default": "/login"
+        },
+        "authMode": {
+          "type": "string",
+          "enum": [
+            "storage",
+            "form",
+            "none"
+          ],
+          "default": "form"
+        },
+        "allowedHosts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "widgets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": [
+            "html"
+          ]
+        },
+        "viewport": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "height": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "width",
+            "height"
+          ],
+          "additionalProperties": false,
+          "default": {
+            "width": 1440,
+            "height": 900
+          }
+        },
+        "apiSource": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "postLookups": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "authPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "/connect/token$",
+            "/connect/authorize"
+          ]
+        }
+      },
+      "required": [
+        "baseUrl",
+        "allowedHosts"
+      ],
+      "additionalProperties": false
+    },
+    "desktop": {
+      "type": "object",
+      "properties": {
+        "framework": {
+          "type": "string",
+          "const": "electron",
+          "default": "electron"
+        },
+        "appBinaryPath": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "env": {
+                  "type": "string",
+                  "pattern": "^[A-Z_][A-Z0-9_]*$"
+                },
+                "default": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "appEntryPoint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "env": {
+                  "type": "string",
+                  "pattern": "^[A-Z_][A-Z0-9_]*$"
+                },
+                "default": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "appRoot": {
+          "type": "string",
+          "minLength": 1
+        },
+        "appArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "chromedriverPath": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "env": {
+                  "type": "string",
+                  "pattern": "^[A-Z_][A-Z0-9_]*$"
+                },
+                "default": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "env": {
+                    "type": "string",
+                    "pattern": "^[A-Z_][A-Z0-9_]*$"
+                  },
+                  "default": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          },
+          "propertyNames": {
+            "pattern": "^[A-Z_][A-Z0-9_]*$"
+          },
+          "default": {}
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "default": 30000
+        },
+        "captureLogs": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "safety": {
+      "type": "object",
+      "properties": {
+        "allowWrites": {
+          "type": "boolean",
+          "default": false
+        },
+        "allowDestructive": {
+          "type": "boolean",
+          "default": false
+        },
+        "allowWritesEnv": {
+          "type": "string",
+          "pattern": "^[A-Z_][A-Z0-9_]*$"
+        },
+        "destructiveLabels": {
+          "anyOf": [
+            {
+              "type": "string",
+              "const": "locale"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "pattern": {
+                  "type": "string"
+                },
+                "flags": {
+                  "type": "string",
+                  "pattern": "^[imsu]*$",
+                  "default": "i"
+                }
+              },
+              "required": [
+                "pattern"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "default": "locale"
+        },
+        "testDataMarker": {
+          "type": "string",
+          "minLength": 1
+        },
+        "seedingBaseUrlAllowlist": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "budget": {
+          "type": "object",
+          "properties": {
+            "maxActionsPerSession": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "default": 200
+            },
+            "maxSessionMs": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "default": 600000
+            }
+          },
+          "additionalProperties": false,
+          "default": {}
+        }
+      },
+      "additionalProperties": false,
+      "default": {}
+    },
+    "ids": {
+      "type": "object",
+      "properties": {
+        "testCase": {
+          "type": "string",
+          "default": "^TC-[A-Z0-9]+-[A-Z]*\\d+[a-z]?$"
+        },
+        "assertion": {
+          "type": "string",
+          "default": "^A\\d+$"
+        },
+        "checkRef": {
+          "type": "string",
+          "default": "^TC-[A-Z0-9-]+ / A\\d+[a-z]?$"
+        }
+      },
+      "additionalProperties": false,
+      "default": {}
+    },
+    "paths": {
+      "type": "object",
+      "properties": {
+        "specSource": {
+          "type": "string",
+          "minLength": 1
+        },
+        "specCsv": {
+          "type": "string",
+          "minLength": 1
+        },
+        "featureDocs": {
+          "type": "string",
+          "default": "docs/features"
+        },
+        "steps": {
+          "type": "string",
+          "default": "test-steps"
+        },
+        "suites": {
+          "type": "string",
+          "default": "src/suites"
+        },
+        "checklists": {
+          "type": "string",
+          "default": "checklists"
+        },
+        "knowledge": {
+          "type": "string",
+          "default": ".qakit/knowledge"
+        },
+        "evidence": {
+          "type": "string",
+          "default": "evidence"
+        },
+        "reports": {
+          "type": "string",
+          "default": "reports"
+        }
+      },
+      "additionalProperties": false,
+      "default": {}
+    },
+    "reporting": {
+      "type": "object",
+      "properties": {
+        "sqlite": {
+          "type": "string",
+          "default": "db/regression.db"
+        },
+        "tracker": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "none"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "redmine"
+                },
+                "baseUrl": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "env": {
+                          "type": "string",
+                          "pattern": "^[A-Z_][A-Z0-9_]*$"
+                        },
+                        "default": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "apiKeyEnv": {
+                  "type": "string",
+                  "pattern": "^[A-Z_][A-Z0-9_]*$"
+                },
+                "projectId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "customFields": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": [
+                      "string",
+                      "number"
+                    ]
+                  },
+                  "default": {}
+                }
+              },
+              "required": [
+                "type",
+                "baseUrl",
+                "apiKeyEnv"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "default": {
+            "type": "none"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "default": {}
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": {},
+      "default": {}
+    },
+    "mcp": {
+      "type": "object",
+      "properties": {
+        "apiServerName": {
+          "type": "string",
+          "default": "qakit-api"
+        },
+        "uiServerName": {
+          "type": "string",
+          "default": "qakit-ui"
+        }
+      },
+      "additionalProperties": false,
+      "default": {}
+    }
+  },
+  "required": [
+    "project"
+  ],
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QA automation kit project config (qakit.config.yaml)"
+}

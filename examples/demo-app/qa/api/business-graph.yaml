@@ -1,0 +1,7 @@
+edges:
+  - from: order
+    to: product
+    relation: requires
+    level: domain
+    description: An order lists catalogue products.
+    confidence: confirmed

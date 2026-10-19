@@ -1,0 +1,18 @@
+packages:
+  - packages/*
+  - apps/*
+  - examples/*/qa
+allowBuilds:
+  # Reporting API: Prisma downloads its engines, better-sqlite3 builds/fetches its native binding.
+  '@prisma/engines': true
+  prisma: true
+  better-sqlite3: true
+  # Native resolver used by the API's eslint import plugin.
+  unrs-resolver: true
+  # Telemetry only.
+  '@scarf/scarf': false
+  # WebdriverIO's Edge and Firefox drivers (@qakit/desktop): Electron sessions fetch their chromedriver at run time.
+  edgedriver: false
+  geckodriver: false
+  # esbuild ships its binary as an optional dependency; its postinstall only re-verifies it.
+  esbuild: false

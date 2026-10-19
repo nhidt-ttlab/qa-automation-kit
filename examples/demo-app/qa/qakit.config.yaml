@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=../../../schema/qakit.config.schema.json
+project: demo-shop
+environment: local
+locale: en
+adapter: ./src/adapter/index.ts
+envFiles: [.env]
+
+modules:
+  - { id: orders, tcPrefix: ORD, suite: orders, description: Customer orders }
+
+apiSources:
+  shop:
+    description: The shop API, signed in.
+    repository: demo-shop
+    baseUrl: { env: DEMO_SHOP_URL, default: http://127.0.0.1:4731 }
+    openapi: { path: /openapi.json, fileEnv: DEMO_SHOP_SPEC_FILE }
+    auth:
+      type: jwt-login
+      loginPath: /auth/login
+      tokenJsonPath: token
+      usernameEnv: DEMO_SHOP_USERNAME
+      passwordEnv: DEMO_SHOP_PASSWORD
+  shop-public:
+    description: The same API without credentials, for access-control checks.
+    repository: demo-shop
+    baseUrl: { env: DEMO_SHOP_URL, default: http://127.0.0.1:4731 }
+
+api:
+  domainsDir: api/domains
+  businessGraph: api/business-graph.yaml
+  cacheDir: .cache/openapi
+
+web:
+  baseUrl: { env: DEMO_SHOP_URL, default: http://127.0.0.1:4731 }
+  loginPath: /login
+  authMode: form
+  apiSource: shop
+  allowedHosts: [127.0.0.1:4731]
+  widgets: [html]
+  # The sign-in POST only issues a token; read-only runs may send it.
+  postLookups: [/auth/login]
+  viewport: { width: 1280, height: 800 }
+
+safety:
+  allowWritesEnv: DEMO_SHOP_ALLOW_WRITES
+
+ids:
+  testCase: '^TC-[A-Z0-9]+-[A-Z]\d+[a-z]?$'
+
+paths:
+  suites: src/suites
+  steps: test-steps
+  knowledge: .qakit/knowledge
+
+reporting:
+  sqlite: db/runs.db
+
+mcp:
+  apiServerName: demo-shop-api
+  uiServerName: demo-shop-ui

@@ -1,0 +1,37 @@
+{
+  "name": "@qakit/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The qakit command: init, doctor, skills install, suite, api tools and the MCP servers.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "qakit": "./dist/bin.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@qakit/core": "workspace:*",
+    "@qakit/desktop": "workspace:*",
+    "@qakit/mcp-api": "workspace:*",
+    "@qakit/mcp-ui": "workspace:*",
+    "@qakit/runner": "workspace:*",
+    "@qakit/ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "playwright": ">=1.62.0"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

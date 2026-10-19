@@ -1,0 +1,1180 @@
+{
+  "meta": {
+    "project_name": "<Tên dự án>",
+    "project_code": "<MA_DU_AN>",
+    "version": "1.0",
+    "test_environment": "<URL môi trường test>"
+  },
+  "sheets": [
+    {
+      "sheet_name": "HDVT_DuAn",
+      "title": "Hợp đồng vật tư (Trong dự án) - Business Rule Checklist",
+      "screen": "HĐVT (Dự án)",
+      "tab_color": "FF2E75B6",
+      "epic": "Quản lý dự án",
+      "module_name": "Hợp đồng vật tư (Trong dự án)",
+      "status": "Not Started",
+      "note": "Hardening - business rule only",
+      "groups": [
+        {
+          "name": "A. THÔNG TIN CHUNG HỢP ĐỒNG",
+          "cases": [
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Nhà cung cấp",
+              "rule": "List NCC chỉ lấy NCC thuộc dự án và có trạng thái \"Đang hoạt động\"",
+              "test_data": "NCC đang hoạt động / ngừng hoạt động",
+              "expected": "Chỉ NCC đang hoạt động của dự án được hiển thị và chọn được",
+              "impact": "Ký HĐ với NCC không hợp lệ → sai đối tượng công nợ, sai dữ liệu mua hàng",
+              "priority": "P2"
+            },
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Số hợp đồng",
+              "rule": "Số hợp đồng là mã định danh duy nhất — validate trùng",
+              "test_data": "Nhập lại số HĐ đã tồn tại",
+              "expected": "Message: \"Số hợp đồng XXX đã tồn tại\"; không cho lưu",
+              "impact": "Trùng số HĐ → không truy vết được HĐ áp dụng cho đơn hàng, sai đối chiếu công nợ",
+              "priority": "P1",
+              "note": "Cần confirm: unique theo dự án hay toàn HT (spec ghi cả hai)"
+            },
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Trường bắt buộc",
+              "rule": "Validate bắt buộc: Nhà cung cấp, Số hợp đồng, Ngày ký, Loại tiền",
+              "test_data": "Bỏ trống từng trường",
+              "expected": "Message \"Hãy nhập thông tin cho trường …\" tương ứng; chặn lưu",
+              "impact": "Thiếu dữ liệu gốc → HĐ không dùng được cho đơn hàng",
+              "priority": "P2"
+            },
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Loại hợp đồng",
+              "rule": "Chỉ được chọn 01 trong 03 giá trị: HĐ vật tư / HĐ thiết bị / Xác nhận đơn hàng",
+              "expected": "Không cho chọn đồng thời nhiều loại",
+              "impact": "Loại HĐ quyết định logic tách đơn hàng → sai loại = sai toàn bộ nghiệp vụ tách đơn",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Loại hợp đồng",
+              "rule": "Không cho xác nhận HĐ khi chưa chọn Loại hợp đồng",
+              "test_data": "Bỏ trống Loại HĐ → bấm Hoàn thành",
+              "expected": "Message: \"Vui lòng chọn loại hợp đồng và lưu thông tin lại trước khi hoàn thành hợp đồng\"",
+              "impact": "HĐ không loại → đơn hàng không xác định được quy tắc tách đơn",
+              "priority": "P1"
+            },
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Loại hợp đồng",
+              "rule": "Thay đổi Loại hợp đồng sau khi HĐ đã phát sinh đơn hàng liên kết",
+              "test_data": "HĐ đã có 2 đơn hàng",
+              "expected": "Bị chặn hoặc cảnh báo ảnh hưởng logic tách đơn",
+              "impact": "Đổi loại HĐ giữa chừng → đơn hàng cũ và mới áp dụng 2 quy tắc khác nhau, lệch dữ liệu",
+              "priority": "P1",
+              "note": "Cần confirm: có cho đổi loại HĐ sau xác nhận không?"
+            },
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Ngày hết hiệu lực",
+              "rule": "Cho phép để trống Ngày hết hiệu lực (HĐ vô thời hạn)",
+              "test_data": "Null",
+              "expected": "Lưu thành công, không báo lỗi",
+              "impact": "Chặn sai → không tạo được HĐ khung dài hạn",
+              "priority": "P3"
+            },
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Ngày hết hiệu lực",
+              "rule": "Ràng buộc Ngày hết hiệu lực >= Ngày ký",
+              "test_data": "Ngày ký 20/07, HHL 10/07",
+              "expected": "Cảnh báo/chặn lưu",
+              "impact": "Ngày hiệu lực sai → HĐ hết hạn ngay khi tạo, không dùng được cho đơn hàng",
+              "priority": "P2",
+              "note": "Cần confirm: có ràng buộc này không?"
+            },
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Ngày hết hiệu lực",
+              "rule": "HĐVT đã hết hiệu lực KHÔNG được lấy lên list chọn HĐ tại Đơn hàng",
+              "test_data": "HĐ có Ngày HHL < ngày hiện tại",
+              "expected": "HĐ không xuất hiện trong list chọn của Đơn hàng",
+              "impact": "Dùng HĐ hết hạn → sai đơn giá, sai giá trị đơn hàng, sai chi phí dự án",
+              "priority": "P1"
+            },
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Loại tiền / Tỷ giá",
+              "rule": "Loại tiền mặc định VND, Tỷ giá mặc định 1; danh sách theo danh mục tiền tệ đang tồn tại",
+              "expected": "Mặc định đúng; danh sách khớp danh mục tiền tệ",
+              "impact": "Sai loại tiền → toàn bộ giá trị HĐ và đơn hàng bị quy đổi sai",
+              "priority": "P2",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Loại tiền / Tỷ giá",
+              "rule": "Ràng buộc giá trị Tỷ giá: nhập 0, số âm, để trống",
+              "test_data": "0 / -1 / null",
+              "expected": "Chặn với message lỗi tường minh",
+              "impact": "Tỷ giá = 0 → đơn giá quy đổi = 0 → sai giá trị nhập kho, sai giá vốn, sai báo cáo B3/C1",
+              "priority": "P1",
+              "note": "Cần confirm: ràng buộc >= 0 hay > 0. Hiện message để trống chưa tường minh (BUG)"
+            },
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Loại tiền / Tỷ giá",
+              "rule": "Đơn giá vật tư được quy đổi sang VND khi Loại tiền != VND",
+              "test_data": "HĐ USD, đơn giá 100, tỷ giá 25.000",
+              "expected": "Đơn giá quy đổi = 2.500.000 VND, làm tròn đúng quy tắc",
+              "impact": "Sai quy đổi → sai giá trị đơn hàng, giá trị nhập kho và Bảng quản lý giá",
+              "priority": "P1"
+            },
+            {
+              "category": "Thông tin chung",
+              "sub_category": "Giá trị HĐ",
+              "rule": "Ràng buộc Giá trị HĐ trước VAT / Giá trị VAT: only number, >= 0",
+              "test_data": "-100 / abc / 0",
+              "expected": "Chặn giá trị âm và ký tự",
+              "impact": "Giá trị âm → sai tổng giá trị hợp đồng và báo cáo chi phí",
+              "priority": "P3"
+            }
+          ]
+        },
+        {
+          "name": "B. THÔNG TIN THANH TOÁN & ĐIỀU KIỆN GIỮ GIÁ",
+          "cases": [
+            {
+              "category": "Thanh toán",
+              "sub_category": "Tỷ lệ thanh toán",
+              "rule": "Ràng buộc 0 <= X <= 100 cho Tỷ lệ tạm ứng / Tỷ lệ thanh toán / Tỷ lệ giữ lại bảo hành",
+              "test_data": "-1 / 0 / 50 / 100 / 101",
+              "expected": "Chỉ chấp nhận 0-100; ngoài khoảng báo lỗi",
+              "impact": "Sai tỷ lệ → sai kế hoạch giải ngân và giá trị tạm ứng cho NCC",
+              "priority": "P2"
+            },
+            {
+              "category": "Thanh toán",
+              "sub_category": "Tỷ lệ thanh toán",
+              "rule": "Kiểm soát tổng Tỷ lệ tạm ứng + thanh toán + giữ lại bảo hành",
+              "test_data": "Tổng = 120%",
+              "expected": "Cảnh báo khi vượt 100%",
+              "impact": "Tổng > 100% → thanh toán vượt giá trị hợp đồng",
+              "priority": "P2",
+              "note": "Cần confirm: có kiểm soát tổng 3 tỷ lệ không?"
+            },
+            {
+              "category": "Thanh toán",
+              "sub_category": "Thời gian chờ hàng",
+              "rule": "Thời gian chờ hàng mặc định 0, ràng buộc >= 0",
+              "test_data": "-1 / 0 / 30",
+              "expected": "Không cho nhập số âm",
+              "impact": "Sai lead time → sai kế hoạch giao hàng và tiến độ thi công",
+              "priority": "P3"
+            },
+            {
+              "category": "Điều kiện giữ giá",
+              "sub_category": "Theo ngày",
+              "rule": "Giá được giữ trong X ngày kể từ ngày ký; quá X ngày là vi phạm",
+              "test_data": "Giữ giá 30 ngày, đặt hàng ngày thứ 31",
+              "expected": "HĐ không lên list chọn HOẶC cảnh báo vi phạm điều kiện giữ giá",
+              "impact": "Không kiểm soát → đặt hàng theo giá cũ đã hết hiệu lực, sai chi phí mua hàng",
+              "priority": "P1",
+              "note": "Cần confirm: chặn hay chỉ cảnh báo"
+            },
+            {
+              "category": "Điều kiện giữ giá",
+              "sub_category": "Theo giá trị đơn hàng",
+              "rule": "Giá chỉ được giữ khi giá trị đơn hàng đạt ngưỡng cấu hình",
+              "test_data": "Ngưỡng 100tr, đơn hàng 50tr",
+              "expected": "Cảnh báo/chặn đúng theo quy định khi chưa đạt ngưỡng",
+              "impact": "Sai kiểm soát → mất điều kiện thương mại đã đàm phán với NCC",
+              "priority": "P1",
+              "note": "Cần confirm: chặn hay cảnh báo"
+            },
+            {
+              "category": "Điều kiện giữ giá",
+              "sub_category": "Theo số lần đặt hàng",
+              "rule": "Giá chỉ giữ trong N lần đặt hàng đầu tiên",
+              "test_data": "Cấu hình 3 lần, tạo đơn hàng lần thứ 4",
+              "expected": "Từ lần thứ 4 hệ thống cảnh báo/chặn theo quy định",
+              "impact": "Đếm sai số lần đặt → áp sai đơn giá cho các đơn hàng sau",
+              "priority": "P1",
+              "note": "Cần confirm: chặn hay cảnh báo; đơn bị hủy có tính vào số lần không?"
+            },
+            {
+              "category": "Điều kiện giữ giá",
+              "sub_category": "Theo giá trị hợp đồng",
+              "rule": "Không được đặt vượt quá X% giá trị hợp đồng; vượt thì áp đơn giá mới",
+              "test_data": "Ngưỡng 10%, lũy kế đặt vượt 10% GTHĐ",
+              "expected": "Cảnh báo/chặn hoặc áp đơn giá mới theo quy định",
+              "impact": "Không kiểm soát → đặt vượt giá trị HĐ, vượt ngân sách gói thầu",
+              "priority": "P1",
+              "note": "Cần confirm: cơ chế xử lý khi vượt"
+            },
+            {
+              "category": "Điều kiện giữ giá",
+              "sub_category": "Đa điều kiện",
+              "rule": "Vi phạm đồng thời nhiều điều kiện giữ giá",
+              "test_data": "Vi phạm cả \"Theo ngày\" và \"Số lần đặt hàng\"",
+              "expected": "Hiển thị đầy đủ/ưu tiên đúng cảnh báo theo quy định",
+              "impact": "Bỏ sót cảnh báo → user đặt hàng sai giá mà không biết",
+              "priority": "P2",
+              "note": "Cần confirm: thứ tự ưu tiên cảnh báo"
+            },
+            {
+              "category": "Thanh toán",
+              "sub_category": "Tài khoản giải ngân",
+              "rule": "Tài khoản giải ngân chỉ lấy theo danh sách tài khoản của NCC đã chọn",
+              "test_data": "Đổi NCC sau khi đã chọn TK",
+              "expected": "Danh sách TK cập nhật theo NCC mới; TK cũ được reset",
+              "impact": "Giải ngân sai tài khoản → rủi ro thanh toán nhầm đối tác",
+              "priority": "P2"
+            }
+          ]
+        },
+        {
+          "name": "C. CÔNG THỨC GIÁ TRỊ HỢP ĐỒNG & CHI PHÍ PHÁT SINH",
+          "cases": [
+            {
+              "category": "Chi phí phát sinh",
+              "sub_category": "Ràng buộc nhập",
+              "rule": "Giá trị trước VAT của 5 loại chi phí (Nhập khẩu, Vận chuyển, Kiểm định, T&C, Khác): only number, >= 0, default 0",
+              "test_data": "-1 / abc / 0 / 1.000.000",
+              "expected": "Chỉ nhận số >= 0; mặc định 0",
+              "impact": "Chi phí âm → sai tổng giá trị HĐ và sai phân bổ chi phí vào giá vốn vật tư",
+              "priority": "P2"
+            },
+            {
+              "category": "Chi phí phát sinh",
+              "sub_category": "Ràng buộc nhập",
+              "rule": "%VAT của từng loại chi phí trong khoảng 0 <= X <= 100",
+              "test_data": "-1 / 0 / 8 / 100 / 101",
+              "expected": "Chỉ nhận 0-100",
+              "impact": "Sai %VAT → sai tiền thuế, sai đối chiếu hóa đơn NCC",
+              "priority": "P2"
+            },
+            {
+              "category": "Chi phí phát sinh",
+              "sub_category": "Công thức",
+              "rule": "Giá trị VAT = Giá trị trước VAT * %VAT (áp dụng cho cả 5 loại chi phí)",
+              "test_data": "1.000.000 x 8%",
+              "expected": "Giá trị VAT = 80.000; ô readonly, tự tính lại khi đổi input",
+              "impact": "Sai công thức VAT → sai tổng giá trị HĐ và sai số liệu kế toán",
+              "priority": "P1"
+            },
+            {
+              "category": "Chi phí phát sinh",
+              "sub_category": "Công thức",
+              "rule": "Giá trị sau VAT = Giá trị trước VAT + Giá trị VAT (từng loại chi phí)",
+              "expected": "Trước VAT 1.000.000, VAT 80.000 → Giá trị sau VAT hiển thị 1.080.000; đúng cho cả 5 loại chi phí",
+              "impact": "Sai → sai tổng chi phí phát sinh của hợp đồng",
+              "priority": "P1",
+              "test_data": "Chi phí vận chuyển: trước VAT 1.000.000, %VAT 8"
+            },
+            {
+              "category": "Tổng giá trị",
+              "sub_category": "Công thức",
+              "rule": "Chi phí phát sinh_trước VAT = tổng GT trước VAT của 5 dòng chi phí (tương tự cho VAT và sau VAT)",
+              "test_data": "5 dòng chi phí có giá trị",
+              "expected": "Tổng đúng; tự cập nhật khi sửa 1 dòng bất kỳ",
+              "impact": "Sai tổng chi phí → sai giá trị hợp đồng và sai phân bổ chi phí vào đơn hàng",
+              "priority": "P1"
+            },
+            {
+              "category": "Tổng giá trị",
+              "sub_category": "Công thức",
+              "rule": "Giá trị hàng hóa_trước VAT = tổng (Khối lượng * Đơn giá trước VAT) của các dòng vật tư",
+              "test_data": "3 dòng vật tư",
+              "expected": "Tổng đúng; cập nhật khi thêm/sửa/xóa dòng vật tư",
+              "impact": "Sai giá trị hàng hóa → sai giá trị hợp đồng, sai kiểm soát ngân sách mua hàng",
+              "priority": "P1"
+            },
+            {
+              "category": "Tổng giá trị",
+              "sub_category": "Công thức",
+              "rule": "Giá trị hàng hóa_VAT = tổng Tiền VAT các dòng VT; _sau VAT = trước VAT + VAT",
+              "expected": "3 dòng VT có VAT 80.000 + 50.000 + 20.000 → Giá trị hàng hóa_VAT hiển thị 150.000; _sau VAT = 2.150.000 khi trước VAT là 2.000.000",
+              "impact": "Sai → sai giá trị hợp đồng sau thuế",
+              "priority": "P1",
+              "test_data": "3 dòng vật tư: VAT 80.000 / 50.000 / 20.000; tổng trước VAT 2.000.000"
+            },
+            {
+              "category": "Tổng giá trị",
+              "sub_category": "Công thức",
+              "rule": "Tổng giá trị_trước VAT = Giá trị hàng hóa trước VAT + Chi phí phát sinh trước VAT",
+              "expected": "Hàng hóa 2.000.000 + chi phí phát sinh 1.000.000 → Tổng giá trị_trước VAT hiển thị 3.000.000; ô readonly, không sửa tay được",
+              "impact": "Đây là giá trị hợp đồng dùng cho điều kiện giữ giá \"Theo giá trị hợp đồng\" → sai sẽ kéo theo sai kiểm soát đặt hàng",
+              "priority": "P1",
+              "test_data": "Hàng hóa trước VAT 2.000.000; chi phí phát sinh trước VAT 1.000.000"
+            },
+            {
+              "category": "Tổng giá trị",
+              "sub_category": "Công thức",
+              "rule": "Tổng giá trị_VAT = VAT hàng hóa + VAT phát sinh; Tổng giá trị_sau VAT = sau VAT hàng hóa + sau VAT chi phí phát sinh",
+              "expected": "VAT hàng hóa 150.000 + VAT phát sinh 80.000 → Tổng giá trị_VAT hiển thị 230.000; Tổng giá trị_sau VAT hiển thị 3.230.000",
+              "impact": "Sai → sai giá trị hợp đồng sau thuế, sai đối chiếu công nợ NCC",
+              "priority": "P1",
+              "test_data": "VAT hàng hóa 150.000; VAT phát sinh 80.000; tổng trước VAT 3.000.000"
+            },
+            {
+              "category": "Tổng giá trị",
+              "sub_category": "Làm tròn",
+              "rule": "Áp dụng đúng Quy tắc làm tròn của hệ thống cho các giá trị tính toán",
+              "test_data": "Giá trị lẻ nhiều chữ số thập phân",
+              "expected": "Giá trị được làm tròn đúng quy tắc cấu hình",
+              "impact": "Làm tròn sai → lệch giá trị giữa HĐ, đơn hàng và phiếu kho, gây chênh lệch chốt kỳ",
+              "priority": "P2",
+              "note": "Cần confirm: quy tắc làm tròn áp dụng cho HĐVT"
+            }
+          ]
+        },
+        {
+          "name": "D. CHI TIẾT VẬT TƯ THEO HỢP ĐỒNG",
+          "cases": [
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Thêm dòng",
+              "rule": "Thêm dòng chỉ được chọn vật tư tồn tại trong danh mục vật tư của dự án",
+              "test_data": "Dự án chưa có vật tư",
+              "expected": "Không cho thêm dòng hoặc thông báo phù hợp; không tự sinh vật tư mới",
+              "impact": "Ký HĐ với vật tư không thuộc dự án → không mapping được với định mức/đơn hàng",
+              "priority": "P2"
+            },
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Mã / Tên vật tư",
+              "rule": "Auto-fill Mã vật tư rút gọn, Mã vật tư, Tên vật tư khi chọn vật tư đã tồn tại",
+              "expected": "Mỗi vật tư chỉ có 1 mã rút gọn duy nhất; Mã/Tên readonly",
+              "impact": "Sai mã vật tư → không mapping được HĐ với đơn hàng, phiếu kho và báo cáo B3/C1",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Đơn vị quy đổi",
+              "rule": "Đơn vị quy đổi lấy đúng theo Quy cách đóng gói tương ứng (Vật tư, Kích thước, Tiết diện, TSKT)",
+              "test_data": "VT có cấu hình quy cách đóng gói",
+              "expected": "Đơn vị quy đổi khớp cấu hình tại màn Quy cách đóng gói trong dự án",
+              "impact": "Sai quy đổi → sai khối lượng đặt hàng và làm tròn theo quy cách đóng gói",
+              "priority": "P1",
+              "note": "Cần confirm: đang có lỗi validate theo khu vực - Redmine #38327"
+            },
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Khối lượng",
+              "rule": "Ràng buộc Khối lượng ký hợp đồng (âm, 0, thập phân, ký tự)",
+              "test_data": "-1 / 0 / 10,5 / abc",
+              "expected": "Chỉ nhận số hợp lệ; giá trị không hợp lệ bị chặn với message rõ ràng",
+              "impact": "KL ký sai → sai KL còn được đặt, sai logic tách đơn hàng",
+              "priority": "P1",
+              "note": "Cần confirm: KL có cho phép = 0 hoặc âm không?"
+            },
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Đơn giá / %VAT",
+              "rule": "Ràng buộc Đơn giá >= 0 và %VAT trong khoảng 0-100",
+              "test_data": "-1 / 0 / 101",
+              "expected": "Chặn giá trị ngoài ràng buộc",
+              "impact": "Đơn giá sai → đơn hàng bắt sai giá, sai giá trị nhập kho và giá tạm tính",
+              "priority": "P1"
+            },
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Công thức dòng",
+              "rule": "Tiền hàng = Đơn giá * Khối lượng",
+              "test_data": "KL 10, ĐG 100.000",
+              "expected": "Tiền hàng = 1.000.000",
+              "impact": "Sai → sai giá trị hàng hóa của hợp đồng",
+              "priority": "P1"
+            },
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Công thức dòng",
+              "rule": "Tiền VAT = Tiền hàng * %VAT; Tổng = Tiền hàng + Tiền VAT",
+              "test_data": "Tiền hàng 1.000.000, VAT 8%",
+              "expected": "Tiền VAT = 80.000; Tổng = 1.080.000",
+              "impact": "Sai → sai giá trị hợp đồng sau thuế",
+              "priority": "P1"
+            },
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Import",
+              "rule": "Import vật tư chưa tồn tại: hệ thống tự sinh Mã/Tên theo Công thức sinh mã đã cấu hình",
+              "test_data": "File chứa VT mới theo bộ thông số",
+              "expected": "Mã và Tên vật tư sinh đúng theo cấu hình Cài đặt sinh mã",
+              "impact": "Sinh mã sai → không mapping được dữ liệu giữa HĐ, đơn hàng, kho và báo cáo",
+              "priority": "P1"
+            },
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Import",
+              "rule": "Import thiếu trường bắt buộc theo Ma trận thuộc tính sinh mã",
+              "test_data": "Thiếu Nhóm vật tư / Hãng SX",
+              "expected": "Preview hiển thị lỗi \"Nhập thiếu trường … để sinh mã/tên tự động\"; dòng lỗi KHÔNG được sinh mã",
+              "impact": "Sinh mã thiếu thuộc tính → trùng mã hoặc sai mã vật tư trên toàn hệ thống",
+              "priority": "P1"
+            },
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Import",
+              "rule": "Import giá trị thuộc tính không tồn tại trong danh mục (Nhóm VT, Tiêu chuẩn, Kiểu lắp đặt, ĐVT…)",
+              "test_data": "Giá trị không có trong danh mục",
+              "expected": "Preview báo lỗi tương ứng; không cho import dòng lỗi",
+              "impact": "Dữ liệu rác vào danh mục → sai phân loại vật tư và sai báo cáo tổng hợp",
+              "priority": "P2"
+            },
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Import",
+              "rule": "Import nhiều lần trên cùng hợp đồng với vật tư đã tồn tại — quy tắc cộng dồn / ghi đè",
+              "test_data": "Import lần 2 chứa VT đã có ở lần 1",
+              "expected": "Áp dụng đúng quy tắc cộng dồn hoặc ghi đè theo spec",
+              "impact": "Sai quy tắc → nhân đôi hoặc mất khối lượng ký hợp đồng",
+              "priority": "P1",
+              "note": "Cần confirm: cộng dồn hay ghi đè"
+            },
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Import",
+              "rule": "Import giá trị KL / Đơn giá / %VAT không hợp lệ (âm, chữ, vượt ngưỡng)",
+              "test_data": "-5 / abc / 200%",
+              "expected": "Preview cảnh báo lỗi; không import dòng lỗi",
+              "impact": "Dữ liệu sai lọt vào HĐ → sai đơn giá áp cho đơn hàng",
+              "priority": "P1"
+            },
+            {
+              "category": "Chi tiết vật tư",
+              "sub_category": "Xóa dòng",
+              "rule": "Xóa dòng vật tư đã phát sinh đơn hàng",
+              "test_data": "VT đã được đặt hàng",
+              "expected": "Bị chặn với cảnh báo phù hợp",
+              "impact": "Xóa VT đã đặt hàng → đơn hàng mất tham chiếu HĐ, sai đơn giá và KL đã đặt",
+              "priority": "P1",
+              "note": "Cần confirm: quy định xóa VT đã phát sinh nghiệp vụ"
+            }
+          ]
+        },
+        {
+          "name": "E. LUỒNG TRẠNG THÁI HỢP ĐỒNG",
+          "cases": [
+            {
+              "category": "Trạng thái",
+              "sub_category": "Khởi tạo",
+              "rule": "HĐ mới tạo có trạng thái mặc định Đang soạn thảo và cho phép sửa toàn bộ thông tin",
+              "expected": "Trạng thái = Đang soạn thảo",
+              "impact": "Sai trạng thái khởi tạo → HĐ chưa duyệt bị dùng cho đơn hàng",
+              "priority": "P2",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Trạng thái",
+              "sub_category": "Chuyển trạng thái",
+              "rule": "Luồng chuyển Đang soạn thảo → Chờ xử lý → Đã xác nhận",
+              "expected": "Chuyển đúng luồng; ghi nhận người thực hiện và thời điểm",
+              "impact": "Sai luồng duyệt → mất kiểm soát phê duyệt hợp đồng",
+              "priority": "P1",
+              "note": "Cần confirm: nút và điều kiện chuyển trạng thái; có luồng từ chối không?",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Trạng thái",
+              "sub_category": "Ràng buộc sử dụng",
+              "rule": "CHỈ hợp đồng ở trạng thái Đã xác nhận mới được lấy lên list chọn HĐ tại Đơn hàng",
+              "test_data": "HĐ Đang soạn thảo / Chờ xử lý",
+              "expected": "HĐ chưa xác nhận không xuất hiện trong list chọn của Đơn hàng",
+              "impact": "HĐVT chưa duyệt được dùng tại đơn hàng → sai nghiệp vụ, sai đơn giá (rủi ro nêu trong Feature List)",
+              "priority": "P1"
+            },
+            {
+              "category": "Trạng thái",
+              "sub_category": "Ràng buộc sửa/xóa",
+              "rule": "Quyền Sửa / Xóa hợp đồng theo từng trạng thái",
+              "test_data": "HĐ ở 3 trạng thái",
+              "expected": "Chỉ cho sửa/xóa theo đúng quy định; trạng thái Đã xác nhận phải điều chỉnh qua Phụ lục",
+              "impact": "Sửa trực tiếp HĐ đã xác nhận → mất vết điều chỉnh, sai lịch sử đơn giá",
+              "priority": "P1",
+              "note": "Cần confirm: danh sách trường còn cho sửa sau xác nhận"
+            },
+            {
+              "category": "Trạng thái",
+              "sub_category": "Xác nhận HĐ",
+              "rule": "Xác nhận hợp đồng khi chưa có dòng vật tư nào",
+              "test_data": "HĐ không có chi tiết vật tư",
+              "expected": "Chặn hoặc cho phép theo đúng quy định",
+              "impact": "HĐ rỗng được xác nhận → gán vào đơn hàng nhưng không bắt được đơn giá",
+              "priority": "P2",
+              "note": "Cần confirm: HĐ rỗng có được xác nhận không?"
+            },
+            {
+              "category": "Trạng thái",
+              "sub_category": "Hiển thị tab",
+              "rule": "Các tab Phụ lục, Điều chỉnh tỷ giá, Tiến độ thực hiện, Đơn hàng chỉ xuất hiện khi HĐ Đã xác nhận",
+              "expected": "Tab ẩn ở trạng thái Đang soạn thảo / Chờ xử lý",
+              "impact": "Cho phép tạo phụ lục khi HĐ chưa duyệt → sai luồng nghiệp vụ",
+              "priority": "P2",
+              "note": "Cần confirm: quy định ẩn/hiện tab theo trạng thái",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Trạng thái",
+              "sub_category": "Phân quyền",
+              "rule": "Phân quyền Xem / Thêm / Sửa / Xóa / Xác nhận HĐVT theo vai trò",
+              "test_data": "User không có quyền, truy cập trực tiếp URL",
+              "expected": "Chặn cả trên UI lẫn khi gọi API/URL trực tiếp",
+              "impact": "Vượt quyền duyệt hợp đồng → rủi ro kiểm soát nội bộ",
+              "priority": "P1"
+            }
+          ]
+        },
+        {
+          "name": "F. TIẾN ĐỘ THỰC HIỆN",
+          "cases": [
+            {
+              "category": "Tiến độ thực hiện",
+              "sub_category": "Khối lượng",
+              "rule": "KL HĐ gốc = khối lượng ký tại hợp đồng gốc, không đổi khi phát sinh phụ lục",
+              "test_data": "HĐ gốc 100, phụ lục +50",
+              "expected": "KL HĐ gốc vẫn = 100",
+              "impact": "Sai KL gốc → không đối chiếu được điều chỉnh phụ lục so với hợp đồng ban đầu",
+              "priority": "P1"
+            },
+            {
+              "category": "Tiến độ thực hiện",
+              "sub_category": "Khối lượng",
+              "rule": "KL Phát sinh = tổng KL điều chỉnh từ tất cả phụ lục (gồm cả vật tư bổ sung mới)",
+              "test_data": "Phụ lục 1: +50, Phụ lục 2: -20",
+              "expected": "KL Phát sinh = +30",
+              "impact": "Sai KL phát sinh → sai KL còn được đặt hàng",
+              "priority": "P1"
+            },
+            {
+              "category": "Tiến độ thực hiện",
+              "sub_category": "Khối lượng",
+              "rule": "Tổng KL = KL HĐ gốc + KL Phát sinh",
+              "test_data": "Gốc 100, phát sinh +30",
+              "expected": "Tổng KL = 130",
+              "impact": "Đây là trần khối lượng được đặt hàng → sai sẽ cho đặt vượt hợp đồng",
+              "priority": "P1"
+            },
+            {
+              "category": "Tiến độ thực hiện",
+              "sub_category": "Khối lượng",
+              "rule": "KL Đã đặt hàng cộng dồn đúng khi phát sinh đơn hàng gán HĐ này",
+              "test_data": "Đơn 1: 20, Đơn 2: 30",
+              "expected": "KL Đã đặt hàng = 50",
+              "impact": "Sai KL đã đặt → sai KL còn được đặt, sai kiểm soát mua hàng và báo cáo B3/C1",
+              "priority": "P1"
+            },
+            {
+              "category": "Tiến độ thực hiện",
+              "sub_category": "Khối lượng",
+              "rule": "KL Chưa đặt hàng = Tổng KL - KL Đã đặt hàng, không âm",
+              "test_data": "Tổng 130, đã đặt 50",
+              "expected": "KL Chưa đặt hàng = 80",
+              "impact": "Sai → cho đặt hàng vượt khối lượng ký hợp đồng",
+              "priority": "P1"
+            },
+            {
+              "category": "Tiến độ thực hiện",
+              "sub_category": "Khối lượng",
+              "rule": "KL Đã đặt hàng được hoàn lại khi đơn hàng bị Hủy hoặc Đóng",
+              "test_data": "Hủy đơn hàng KL 20",
+              "expected": "KL Đã đặt hàng giảm 20; KL Chưa đặt hàng tăng tương ứng",
+              "impact": "Không hoàn KL → khóa nhầm khối lượng, không đặt tiếp được dù HĐ còn hạn mức",
+              "priority": "P1"
+            },
+            {
+              "category": "Tiến độ thực hiện",
+              "sub_category": "Đơn giá",
+              "rule": "Đơn giá hiển thị là đơn giá mới nhất sau phụ lục / điều chỉnh tỷ giá",
+              "test_data": "Phụ lục đổi đơn giá",
+              "expected": "Hiển thị đúng đơn giá mới nhất; truy được đơn giá trước thay đổi",
+              "impact": "Sai đơn giá hiện hành → đơn hàng mới bắt sai giá",
+              "priority": "P1"
+            },
+            {
+              "category": "Tiến độ thực hiện",
+              "sub_category": "Dừng đặt hàng",
+              "rule": "Tick \"Dừng đặt hàng\" cho dòng vật tư → vật tư đó không còn KL ký HĐ khi tạo đơn hàng",
+              "test_data": "VT đã tick dừng đặt hàng",
+              "expected": "Tại Đơn hàng, vật tư đó không lấy được KL ký HĐ / không đặt tiếp được",
+              "impact": "Không chặn được → tiếp tục đặt hàng vật tư đã dừng, sai kế hoạch mua sắm",
+              "priority": "P1"
+            },
+            {
+              "category": "Tiến độ thực hiện",
+              "sub_category": "Dừng đặt hàng",
+              "rule": "Bỏ tick \"Dừng đặt hàng\" → vật tư được đặt hàng trở lại bình thường",
+              "expected": "Vật tư lấy lại được KL ký HĐ tại đơn hàng",
+              "impact": "Không mở lại được → chặn nhầm nghiệp vụ mua hàng",
+              "priority": "P2",
+              "test_data": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "G. TAB ĐƠN HÀNG",
+          "cases": [
+            {
+              "category": "Tab Đơn hàng",
+              "sub_category": "Nguồn dữ liệu",
+              "rule": "Chỉ tổng hợp các đơn hàng đã gán hợp đồng đang xem",
+              "test_data": "HĐ A có 3 đơn, HĐ B có 2 đơn",
+              "expected": "Chỉ hiển thị 3 đơn của HĐ A",
+              "impact": "Lẫn đơn hàng của HĐ khác → sai theo dõi tiến độ và giá trị thực hiện hợp đồng",
+              "priority": "P1"
+            },
+            {
+              "category": "Tab Đơn hàng",
+              "sub_category": "Đối chiếu dữ liệu",
+              "rule": "Giá trị đơn hàng (GT hàng hóa, CP phát sinh, Tổng trước/sau VAT) khớp với màn Đơn hàng",
+              "expected": "Số liệu đồng nhất giữa 2 màn hình",
+              "impact": "Lệch số liệu giữa 2 màn → mất tin cậy dữ liệu, sai đối chiếu với báo cáo B3/C1",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Tab Đơn hàng",
+              "sub_category": "GTNK",
+              "rule": "Cột GTNK (giá trị nhập kho) cập nhật khi phát sinh phiếu nhập kho theo đơn hàng",
+              "test_data": "Nhập kho 1 phần / nhập hết",
+              "expected": "GTNK cập nhật đúng theo KL và giá trị đã nhập kho",
+              "impact": "Sai GTNK → sai theo dõi thực hiện hợp đồng và sai đối chiếu công nợ NCC",
+              "priority": "P1"
+            }
+          ]
+        },
+        {
+          "name": "H. PHỤ LỤC HỢP ĐỒNG",
+          "cases": [
+            {
+              "category": "Phụ lục",
+              "sub_category": "Áp dụng cho",
+              "rule": "Mỗi dòng vật tư chọn 1 trong 3: Đơn giá / Khối lượng / Đơn giá & Khối lượng",
+              "expected": "Chỉ chọn được 1 giá trị; cột nhập liệu enable/disable tương ứng",
+              "impact": "Chọn sai → điều chỉnh nhầm loại dữ liệu, sai đơn giá hoặc sai khối lượng hợp đồng",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Phụ lục",
+              "sub_category": "Khối lượng",
+              "rule": "KL phụ lục cho phép nhập số âm và số thập phân; KL hợp đồng gốc readonly",
+              "test_data": "-10 / 5,5",
+              "expected": "Nhận số âm và thập phân; KL gốc không sửa được",
+              "impact": "Không cho nhập âm → không giảm được khối lượng hợp đồng khi cần chốt chặn đơn hàng",
+              "priority": "P1"
+            },
+            {
+              "category": "Phụ lục",
+              "sub_category": "Khối lượng",
+              "rule": "KL ký hợp đồng = KL hợp đồng gốc + KL phụ lục",
+              "test_data": "Gốc 100, phụ lục -30",
+              "expected": "KL ký = 70; cập nhật tại tab Tiến độ thực hiện",
+              "impact": "Sai công thức → sai trần khối lượng đặt hàng của hợp đồng",
+              "priority": "P1"
+            },
+            {
+              "category": "Phụ lục",
+              "sub_category": "Khối lượng",
+              "rule": "Điều chỉnh giảm làm KL ký < KL đã đặt hàng / đã nhập kho",
+              "test_data": "Đã đặt 80, phụ lục giảm còn 70",
+              "expected": "Chặn hoặc cảnh báo theo quy định",
+              "impact": "Cho phép → KL đã đặt vượt KL hợp đồng, âm KL còn lại, sai báo cáo mua hàng",
+              "priority": "P1",
+              "note": "Cần confirm: có chặn không?"
+            },
+            {
+              "category": "Phụ lục",
+              "sub_category": "Đơn giá",
+              "rule": "Vật tư tồn tại ở cả HĐ gốc và phụ lục lấy đơn giá theo PHỤ LỤC MỚI NHẤT",
+              "test_data": "PL1: 100, PL2: 120",
+              "expected": "Đơn giá áp dụng = 120",
+              "impact": "Lấy sai phiên bản đơn giá → sai giá trị đơn hàng và giá trị nhập kho",
+              "priority": "P1"
+            },
+            {
+              "category": "Phụ lục",
+              "sub_category": "Vật tư mới",
+              "rule": "Phụ lục cho phép bổ sung vật tư mới chưa có trong HĐ gốc",
+              "expected": "Vật tư mới được thêm; KL HĐ gốc = 0, KL phát sinh = KL phụ lục",
+              "impact": "Không bổ sung được → đơn hàng có đầu mục ngoài HĐ, phát sinh tách đơn không cần thiết",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Phụ lục",
+              "sub_category": "Đơn hàng đích",
+              "rule": "Phụ lục được áp dụng vào đơn hàng đích được chọn sau khi xác nhận",
+              "test_data": "Chọn 1 / nhiều / không chọn đơn hàng",
+              "expected": "Đơn hàng đích được cập nhật đơn giá/khối lượng; đơn hàng không chọn không bị ảnh hưởng",
+              "impact": "Áp nhầm đơn hàng → sai giá trị đơn hàng và sai giá trị nhập kho",
+              "priority": "P1",
+              "note": "Cần confirm: có bắt buộc chọn đơn hàng đích không?"
+            },
+            {
+              "category": "Phụ lục",
+              "sub_category": "Chốt chặn đơn hàng",
+              "rule": "Phụ lục điều chỉnh KL hợp đồng = KL đơn hàng để chốt chặn đơn hàng",
+              "test_data": "Đơn hàng 70, HĐ 100 → PL giảm về 70",
+              "expected": "Sau xác nhận, KL còn được đặt = 0 cho vật tư đó",
+              "impact": "Không chốt chặn được → tiếp tục đặt hàng ngoài kế hoạch",
+              "priority": "P2"
+            },
+            {
+              "category": "Phụ lục",
+              "sub_category": "Tác động hệ thống",
+              "rule": "Sinh Phiếu nhập/xuất điều chỉnh giá trị khi phụ lục làm thay đổi đơn giá của đơn hàng đã nhập/xuất kho",
+              "test_data": "ĐH đã nhập kho 1 phần",
+              "expected": "Hệ thống sinh phiếu điều chỉnh giá trị tương ứng; KL tồn kho không đổi",
+              "impact": "Không sinh phiếu → sai giá trị tồn kho, sai giá vốn, lệch chốt kỳ kho",
+              "priority": "P1",
+              "note": "Cần confirm: thời điểm sinh phiếu"
+            },
+            {
+              "category": "Phụ lục",
+              "sub_category": "Tác động hệ thống",
+              "rule": "Phụ lục cập nhật giá tạm tính vật tư real-time tại Bảng quản lý giá",
+              "expected": "Đơn giá tạm tính được cập nhật theo phụ lục mới nhất",
+              "impact": "Sai giá tạm tính → sai đơn giá xuất kho và sai giá trị các phiếu xuất",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Phụ lục",
+              "sub_category": "Số phụ lục",
+              "rule": "Validate Số phụ lục thực tế trùng / để trống",
+              "test_data": "Số PL đã tồn tại",
+              "expected": "Message lỗi phù hợp; chặn lưu",
+              "impact": "Trùng số phụ lục → không truy vết được lịch sử điều chỉnh hợp đồng",
+              "priority": "P2",
+              "note": "Cần confirm: quy tắc unique số phụ lục"
+            },
+            {
+              "category": "Phụ lục",
+              "sub_category": "Giá trị phụ lục",
+              "rule": "Các công thức tổng giá trị và 5 loại chi phí phát sinh trên phụ lục tính đúng như HĐ gốc",
+              "expected": "Công thức khớp với HĐ gốc",
+              "impact": "Sai → sai giá trị hợp đồng sau điều chỉnh",
+              "priority": "P2",
+              "test_data": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "I. ĐIỀU CHỈNH TỶ GIÁ",
+          "cases": [
+            {
+              "category": "Điều chỉnh tỷ giá",
+              "sub_category": "Tỷ giá cũ",
+              "rule": "Tỷ giá cũ readonly, hiển thị đúng tỷ giá đang áp dụng của HĐVT",
+              "expected": "Tỷ giá cũ khớp tỷ giá hiện hành của hợp đồng",
+              "impact": "Sai gốc so sánh → tính sai chênh lệch quy đổi",
+              "priority": "P2",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Điều chỉnh tỷ giá",
+              "sub_category": "Tỷ giá mới",
+              "rule": "Ràng buộc Tỷ giá mới: = 0, âm, để trống, bằng tỷ giá cũ",
+              "test_data": "0 / -1 / null / = tỷ giá cũ",
+              "expected": "Chỉ nhận giá trị hợp lệ; message lỗi tường minh",
+              "impact": "Tỷ giá mới = 0 → toàn bộ giá trị quy đổi của đơn hàng về 0, sai giá trị nhập kho và giá vốn",
+              "priority": "P1",
+              "note": "Cần confirm: ràng buộc >= 0 hay > 0"
+            },
+            {
+              "category": "Điều chỉnh tỷ giá",
+              "sub_category": "Đơn hàng đích",
+              "rule": "Danh sách đơn hàng đích chỉ lấy các đơn hàng liên quan tới HĐ đang xem",
+              "expected": "Không hiển thị đơn hàng của HĐ khác",
+              "impact": "Áp tỷ giá nhầm đơn hàng → sai giá trị đơn hàng và giá trị kho",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Điều chỉnh tỷ giá",
+              "sub_category": "Đơn hàng đích",
+              "rule": "Xác nhận phiếu khi không chọn đơn hàng đích nào",
+              "test_data": "Không tick dòng nào",
+              "expected": "Chặn với message phù hợp",
+              "impact": "Phiếu rỗng được xác nhận → tỷ giá đổi nhưng đơn hàng không cập nhật, lệch dữ liệu",
+              "priority": "P2",
+              "note": "Cần confirm: có bắt buộc chọn đơn hàng đích không?"
+            },
+            {
+              "category": "Điều chỉnh tỷ giá",
+              "sub_category": "Công thức",
+              "rule": "GT đơn hàng theo tiền quy đổi = GT theo tiền gốc * Tỷ giá mới (Tổng trước VAT, Tiền VAT, Tổng sau VAT)",
+              "test_data": "GT gốc 1.000 USD, TG 25.000",
+              "expected": "GT quy đổi = 25.000.000 VND",
+              "impact": "Sai quy đổi → sai giá trị đơn hàng, sai giá trị nhập kho và báo cáo quản trị",
+              "priority": "P1"
+            },
+            {
+              "category": "Điều chỉnh tỷ giá",
+              "sub_category": "Công thức",
+              "rule": "GT đơn hàng theo tiền gốc KHÔNG đổi khi thay đổi tỷ giá",
+              "expected": "Giá trị nguyên tệ giữ nguyên",
+              "impact": "Thay đổi cả tiền gốc → sai đối chiếu hóa đơn NCC theo nguyên tệ",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Điều chỉnh tỷ giá",
+              "sub_category": "Tác động hệ thống",
+              "rule": "Sau xác nhận phiếu, đơn giá và giá trị đơn hàng đích được cập nhật theo tỷ giá mới",
+              "expected": "Đơn hàng đích cập nhật đúng giá trị quy đổi",
+              "impact": "Không cập nhật → đơn hàng giữ tỷ giá cũ, sai giá trị mua hàng",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Điều chỉnh tỷ giá",
+              "sub_category": "Tác động hệ thống",
+              "rule": "Sinh Phiếu nhập/xuất điều chỉnh giá trị khi thay đổi tỷ giá ở HĐVT",
+              "test_data": "ĐH đã nhập/xuất kho",
+              "expected": "Hệ thống sinh phiếu điều chỉnh giá trị; KL tồn kho không thay đổi",
+              "impact": "Không sinh phiếu → chênh lệch giá trị nhập/xuất kho, sai chốt kỳ và số liệu kế toán",
+              "priority": "P1"
+            },
+            {
+              "category": "Điều chỉnh tỷ giá",
+              "sub_category": "Nhiều lần điều chỉnh",
+              "rule": "Tạo nhiều phiếu điều chỉnh tỷ giá liên tiếp cho cùng hợp đồng",
+              "test_data": "Phiếu 1: 24.000 → Phiếu 2: 25.000",
+              "expected": "Tỷ giá áp dụng là tỷ giá phiếu mới nhất; lịch sử điều chỉnh được lưu đầy đủ",
+              "impact": "Lấy sai phiên bản tỷ giá → sai giá trị đơn hàng và giá vốn tồn kho",
+              "priority": "P1"
+            }
+          ]
+        },
+        {
+          "name": "J. TÍCH HỢP VỚI ĐƠN HÀNG & BẢNG QUẢN LÝ GIÁ",
+          "cases": [
+            {
+              "category": "Tích hợp Đơn hàng",
+              "sub_category": "Gán HĐVT",
+              "rule": "List chọn HĐVT tại Đơn hàng chỉ gồm HĐ: Đã xác nhận + còn hiệu lực + thuộc dự án + không vi phạm giữ giá",
+              "expected": "Danh sách lọc đúng đủ 4 điều kiện",
+              "impact": "Lọc sai → dùng HĐ không hợp lệ, sai đơn giá và sai kiểm soát mua hàng",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Tích hợp Đơn hàng",
+              "sub_category": "Gán HĐVT",
+              "rule": "Sau khi gán HĐVT, đơn giá của đơn hàng tự cập nhật theo hợp đồng",
+              "test_data": "ĐH chưa có giá",
+              "expected": "Đơn giá được điền theo HĐ; giá trị đơn hàng tính lại đúng",
+              "impact": "Không bắt được đơn giá → sai giá trị đơn hàng (rủi ro số 1 nêu trong Feature List)",
+              "priority": "P1"
+            },
+            {
+              "category": "Tích hợp Đơn hàng",
+              "sub_category": "Gán HĐVT",
+              "rule": "Đơn giá được quy đổi sang VND khi HĐ có Loại tiền != VND",
+              "test_data": "HĐ USD, TG 25.000",
+              "expected": "Đơn giá trên đơn hàng = đơn giá HĐ * tỷ giá",
+              "impact": "Sai quy đổi → sai toàn bộ giá trị đơn hàng và giá trị nhập kho",
+              "priority": "P1"
+            },
+            {
+              "category": "Tích hợp Đơn hàng",
+              "sub_category": "Gán HĐVT",
+              "rule": "1 hợp đồng dùng được cho nhiều đơn hàng ở nhiều thời điểm khác nhau",
+              "test_data": "3 đơn hàng khác ngày",
+              "expected": "Cả 3 đơn gán được HĐ; KL đã đặt hàng cộng dồn đúng",
+              "impact": "Chặn sai → không dùng lại được HĐ khung, chặn nghiệp vụ mua hàng",
+              "priority": "P1"
+            },
+            {
+              "category": "Tích hợp Đơn hàng",
+              "sub_category": "Tách đơn",
+              "rule": "Loại HĐ thiết bị: tách đơn khi KL ký HĐ < KL đơn hàng HOẶC đơn hàng có đầu mục ngoài HĐ",
+              "test_data": "KL HĐ 100, đơn hàng 150",
+              "expected": "Đơn hàng tách thành 2 đơn đúng quy tắc; phân bổ vị trí và đơn hàng/hợp đồng liên kết cập nhật chính xác",
+              "impact": "Tách sai → lệch khối lượng phân bổ, sai KL nhập kho và sai chi phí dự án",
+              "priority": "P1",
+              "note": "Cần confirm: phạm vi test tách đơn thuộc checklist HĐVT hay Đơn hàng"
+            },
+            {
+              "category": "Tích hợp Đơn hàng",
+              "sub_category": "Tách đơn",
+              "rule": "Loại HĐ vật tư / Xác nhận đơn hàng: CHỈ tách khi đơn hàng tồn tại đầu mục không có trong HĐ",
+              "test_data": "ĐH có 1 VT ngoài HĐ",
+              "expected": "Chỉ tách đúng trường hợp này; KL vượt HĐ không gây tách đơn",
+              "impact": "Tách sai loại → sai toàn vẹn dữ liệu đơn hàng và hợp đồng liên kết",
+              "priority": "P1"
+            },
+            {
+              "category": "Tích hợp Đơn hàng",
+              "sub_category": "Tách đơn",
+              "rule": "Tách đơn khi import phân bổ ngoài định mức SAU khi đã gán HĐVT",
+              "expected": "Hệ thống tự tách và phân bổ lại vị trí chính xác",
+              "impact": "Không tách → phân bổ sai vị trí, sai KL nhập/xuất kho theo vị trí",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Tích hợp Đơn hàng",
+              "sub_category": "Vượt khối lượng",
+              "rule": "Đặt hàng vượt KL còn lại của hợp đồng",
+              "test_data": "KL còn lại 20, đặt 30",
+              "expected": "Cảnh báo/chặn hoặc tách đơn theo đúng loại HĐ",
+              "impact": "Đặt vượt không kiểm soát → vượt giá trị hợp đồng đã ký với NCC",
+              "priority": "P1"
+            },
+            {
+              "category": "Tích hợp Đơn hàng",
+              "sub_category": "Hết hiệu lực",
+              "rule": "HĐ hết hiệu lực khi đơn hàng đã gán trước đó",
+              "test_data": "HĐ hết hạn giữa chừng",
+              "expected": "Đơn hàng đã gán không bị ảnh hưởng; đơn hàng mới không chọn được HĐ này",
+              "impact": "Xử lý sai → hoặc mất giá đơn hàng cũ, hoặc cho đặt hàng theo HĐ hết hạn",
+              "priority": "P1"
+            },
+            {
+              "category": "Bảng quản lý giá",
+              "sub_category": "Giá tạm tính",
+              "rule": "HĐVT ảnh hưởng tới giá tạm tính vật tư real-time tại Bảng quản lý giá",
+              "expected": "Giá tạm tính cập nhật theo đơn giá HĐVT mới nhất",
+              "impact": "Sai đơn giá tạm tính → sai đơn giá xuất kho, sai giá vốn và báo cáo C1",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Tích hợp Kho",
+              "sub_category": "Đơn hàng chưa có giá",
+              "rule": "Đơn hàng chưa có giá tại thời điểm nhập/xuất kho, sau đó được gán HĐVT có giá",
+              "test_data": "ĐH nhập kho trước, gán HĐ sau",
+              "expected": "Hệ thống sinh Phiếu nhập/xuất điều chỉnh giá trị tương ứng",
+              "impact": "Không sinh phiếu → giá trị tồn kho = 0, sai giá vốn và sai chốt kỳ kho",
+              "priority": "P1"
+            }
+          ]
+        }
+      ],
+      "screen_code": "HDVT"
+    },
+    {
+      "sheet_name": "HDVT_HeThong",
+      "title": "Hợp đồng vật tư (Cấp hệ thống) - Business Rule Checklist",
+      "screen": "HĐVT (Hệ thống)",
+      "tab_color": "FF548235",
+      "epic": "Quản lý doanh nghiệp",
+      "module_name": "Hợp đồng vật tư (Cấp hệ thống)",
+      "status": "Not Started",
+      "note": "Hardening - business rule only",
+      "groups": [
+        {
+          "name": "A. HỢP ĐỒNG NGOÀI HỆ THỐNG (CHƯA CÓ VẬT TƯ)",
+          "cases": [
+            {
+              "category": "Tạo HĐ ngoài HT",
+              "sub_category": "Tạo mới",
+              "rule": "Tạo HĐ chỉ với thông tin chung + tổng giá trị dự kiến, chưa khai báo dòng vật tư nào",
+              "test_data": "HĐ không có chi tiết vật tư",
+              "expected": "Lưu thành công; HĐ tồn tại với danh sách vật tư rỗng và tổng giá trị dự kiến đã nhập",
+              "impact": "Không tạo được → không quản lý được cam kết giá trị và thời hạn hiệu lực với NCC",
+              "priority": "P2"
+            },
+            {
+              "category": "Tạo HĐ ngoài HT",
+              "sub_category": "Trường bắt buộc",
+              "rule": "Validate bắt buộc: Nhà cung cấp, Số hợp đồng, Loại hợp đồng, Ngày ký, Loại tiền",
+              "test_data": "Bỏ trống từng trường",
+              "expected": "Message bắt buộc tương ứng; chặn lưu",
+              "impact": "Thiếu dữ liệu gốc → HĐ không assign/dùng được ở dự án",
+              "priority": "P2"
+            },
+            {
+              "category": "Tạo HĐ ngoài HT",
+              "sub_category": "Số hợp đồng",
+              "rule": "Số hợp đồng không trùng trên toàn hệ thống",
+              "test_data": "Số HĐ đã tồn tại",
+              "expected": "Message: \"Số hợp đồng XXX đã tồn tại\"",
+              "impact": "Trùng số HĐ giữa các dự án → sai đối chiếu công nợ và truy vết hợp đồng",
+              "priority": "P1",
+              "note": "Cần confirm: phạm vi unique"
+            },
+            {
+              "category": "Tạo HĐ ngoài HT",
+              "sub_category": "Bổ sung vật tư",
+              "rule": "Bổ sung danh sách vật tư cho HĐ ngoài hệ thống sau khi đã tạo",
+              "expected": "Cho phép thêm dòng/import; tổng giá trị được tính lại theo vật tư thực tế",
+              "impact": "Xử lý sai → giá trị dự kiến và giá trị thực tế mâu thuẫn, sai kiểm soát ngân sách",
+              "priority": "P2",
+              "note": "Cần confirm: giá trị dự kiến có bị ghi đè bởi giá trị thực tế không?",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Tạo HĐ ngoài HT",
+              "sub_category": "Hiệu lực",
+              "rule": "Thời hạn hiệu lực (Ngày ký, Ngày hết hiệu lực) của HĐ ngoài hệ thống",
+              "test_data": "HHL < ngày ký",
+              "expected": "Ràng buộc ngày đúng quy định",
+              "impact": "Sai hiệu lực → HĐ không dùng được ở dự án hoặc dùng khi đã hết hạn",
+              "priority": "P2"
+            }
+          ]
+        },
+        {
+          "name": "B. ASSIGN XUỐNG DỰ ÁN / THU HỒI",
+          "cases": [
+            {
+              "category": "Assign",
+              "sub_category": "Assign xuống DA",
+              "rule": "Assign hợp đồng xuống dự án → HĐ xuất hiện và sử dụng được tại dự án đó",
+              "test_data": "HĐ đã xác nhận, DA A",
+              "expected": "HĐ hiển thị tại màn HĐVT của DA A với đầy đủ dữ liệu và lên list chọn của Đơn hàng",
+              "impact": "Assign lỗi → dự án không sử dụng được hợp đồng (rủi ro số 1 nêu trong Feature List)",
+              "priority": "P1"
+            },
+            {
+              "category": "Assign",
+              "sub_category": "Chưa assign",
+              "rule": "HĐ chưa được assign thì dự án KHÔNG sử dụng được",
+              "test_data": "HĐ chưa assign",
+              "expected": "HĐ không hiển thị tại màn HĐVT và không lên list chọn của Đơn hàng trong dự án",
+              "impact": "Rò rỉ HĐ sang dự án chưa được phân bổ → sai kiểm soát hợp đồng theo dự án",
+              "priority": "P1"
+            },
+            {
+              "category": "Assign",
+              "sub_category": "Điều kiện assign",
+              "rule": "Điều kiện trạng thái để được assign xuống dự án",
+              "test_data": "HĐ Đang soạn thảo / Chờ xử lý",
+              "expected": "Chặn hoặc cho phép theo đúng quy định",
+              "impact": "Assign HĐ chưa duyệt → dự án dùng HĐ chưa được phê duyệt",
+              "priority": "P1",
+              "note": "Cần confirm: điều kiện trạng thái để assign"
+            },
+            {
+              "category": "Assign",
+              "sub_category": "Nhiều dự án",
+              "rule": "Assign 1 hợp đồng xuống nhiều dự án",
+              "test_data": "DA A, DA B, DA C",
+              "expected": "HĐ được assign đúng cho các dự án được chọn",
+              "impact": "Sai phân bổ → 1 hạn mức HĐ bị dùng chồng chéo giữa nhiều dự án",
+              "priority": "P1",
+              "note": "Cần confirm: 1 HĐ có được assign nhiều dự án không? Nếu có, KL ký được chia thế nào?"
+            },
+            {
+              "category": "Assign",
+              "sub_category": "Assign trùng",
+              "rule": "Assign lại HĐ đã được assign vào dự án đó",
+              "expected": "Chặn với thông báo HĐ đã tồn tại trong dự án",
+              "impact": "Assign trùng → nhân đôi hạn mức khối lượng ký hợp đồng",
+              "priority": "P1",
+              "test_data": "N/A"
+            },
+            {
+              "category": "Assign",
+              "sub_category": "Thu hồi",
+              "rule": "Thu hồi HĐ khỏi dự án khi CHƯA phát sinh đơn hàng",
+              "test_data": "HĐ chưa có đơn hàng",
+              "expected": "Thu hồi thành công; HĐ biến mất khỏi màn HĐVT của dự án",
+              "impact": "Không thu hồi được → HĐ phân bổ sai dự án không xử lý được",
+              "priority": "P2"
+            },
+            {
+              "category": "Assign",
+              "sub_category": "Thu hồi",
+              "rule": "Thu hồi HĐ khỏi dự án khi ĐÃ phát sinh đơn hàng / phụ lục / phiếu kho",
+              "test_data": "HĐ có 2 đơn hàng đã duyệt",
+              "expected": "Chặn với cảnh báo phù hợp hoặc xử lý theo quy định",
+              "impact": "Thu hồi khi đã phát sinh → đơn hàng mất tham chiếu HĐ, mất đơn giá, sai giá trị nhập kho",
+              "priority": "P1",
+              "note": "Cần confirm: quy định thu hồi khi đã phát sinh nghiệp vụ"
+            }
+          ]
+        },
+        {
+          "name": "C. TRẠNG THÁI & ĐỒNG BỘ DỮ LIỆU",
+          "cases": [
+            {
+              "category": "Trạng thái",
+              "sub_category": "Luồng trạng thái",
+              "rule": "Luồng Đang soạn thảo → Chờ xử lý → Đã xác nhận ở cấp hệ thống",
+              "expected": "Chuyển đúng luồng; ghi nhận người thực hiện và thời điểm",
+              "impact": "Sai luồng duyệt → mất kiểm soát phê duyệt hợp đồng cấp doanh nghiệp",
+              "priority": "P1",
+              "note": "Cần confirm: điều kiện và nút chuyển trạng thái",
+              "test_data": "Chuyển lần lượt 3 trạng thái bằng 2 user khác nhau"
+            },
+            {
+              "category": "Trạng thái",
+              "sub_category": "Ràng buộc sử dụng",
+              "rule": "Chỉ HĐ Đã xác nhận mới được sử dụng ở cấp dự án",
+              "test_data": "HĐ chưa xác nhận đã assign",
+              "expected": "HĐ chưa xác nhận không dùng được cho đơn hàng của dự án",
+              "impact": "HĐ chưa duyệt được dùng → sai nghiệp vụ và sai đơn giá đơn hàng",
+              "priority": "P1"
+            },
+            {
+              "category": "Đồng bộ dữ liệu",
+              "sub_category": "HT → Dự án",
+              "rule": "Dữ liệu HĐ (thông tin chung, chi phí, chi tiết vật tư) hiển thị đúng tại dự án sau khi assign",
+              "expected": "Dữ liệu tại dự án khớp 100% với HĐ cấp hệ thống",
+              "impact": "Lệch dữ liệu → đơn hàng ở dự án bắt sai đơn giá và khối lượng ký",
+              "priority": "P1",
+              "test_data": "HĐ có 3 dòng vật tư, chi phí phát sinh 1.000.000"
+            },
+            {
+              "category": "Đồng bộ dữ liệu",
+              "sub_category": "HT → Dự án",
+              "rule": "Sửa thông tin HĐ tại cấp hệ thống sau khi đã assign xuống dự án",
+              "test_data": "Đổi ngày hết hiệu lực / đơn giá",
+              "expected": "Thay đổi được đồng bộ hoặc bị chặn theo đúng quy định",
+              "impact": "Đồng bộ sai chiều → HĐ ở dự án đổi giá ngầm, sai giá trị các đơn hàng đã phát sinh",
+              "priority": "P1",
+              "note": "Cần confirm: HĐ tại dự án độc lập hay kế thừa động?"
+            },
+            {
+              "category": "Đồng bộ dữ liệu",
+              "sub_category": "Dự án → HT",
+              "rule": "Phụ lục / điều chỉnh tỷ giá tạo ở cấp dự án phản ánh lên cấp hệ thống",
+              "expected": "Hiển thị đúng theo thiết kế",
+              "impact": "Không phản ánh → cấp doanh nghiệp không kiểm soát được điều chỉnh hợp đồng",
+              "priority": "P2",
+              "note": "Cần confirm: chiều đồng bộ dữ liệu",
+              "test_data": "Tạo 1 phụ lục đổi đơn giá tại dự án A"
+            },
+            {
+              "category": "Đồng bộ dữ liệu",
+              "sub_category": "Tiến độ thực hiện",
+              "rule": "Tab Tiến độ thực hiện cấp hệ thống tổng hợp KL/GT từ tất cả dự án được assign",
+              "test_data": "HĐ assign 2 dự án, mỗi DA đặt 20",
+              "expected": "KL đã đặt hàng tổng hợp = 40",
+              "impact": "Tổng hợp sai → không kiểm soát được hạn mức hợp đồng trên toàn hệ thống",
+              "priority": "P1",
+              "note": "Cần confirm: cách tổng hợp khi assign nhiều dự án"
+            },
+            {
+              "category": "Đồng bộ dữ liệu",
+              "sub_category": "Tab Đơn hàng",
+              "rule": "Tab Đơn hàng cấp hệ thống tổng hợp đơn hàng của tất cả dự án dùng HĐ này",
+              "expected": "Hiển thị đủ đơn hàng của các dự án, số liệu khớp với từng dự án",
+              "impact": "Thiếu đơn hàng → sai giá trị đã thực hiện của hợp đồng",
+              "priority": "P1",
+              "test_data": "HĐ assign 2 dự án, mỗi dự án có 2 đơn hàng"
+            },
+            {
+              "category": "Phân quyền",
+              "sub_category": "Phân quyền",
+              "rule": "Phân quyền Xem / Thêm / Sửa / Xóa / Xác nhận / Assign / Thu hồi theo vai trò",
+              "test_data": "User không quyền, gọi trực tiếp URL/API",
+              "expected": "Chặn cả trên UI lẫn khi gọi trực tiếp",
+              "impact": "Vượt quyền assign/duyệt HĐ → rủi ro kiểm soát nội bộ cấp doanh nghiệp",
+              "priority": "P1"
+            }
+          ]
+        }
+      ],
+      "screen_code": "HDVTHT"
+    }
+  ]
+}

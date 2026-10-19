@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+.env
+.env.local
+.env.*.local
+# Demo QA project run output.
+examples/*/qa/db/
+examples/*/qa/reports/
+examples/*/qa/outputs/
+examples/*/qa/evidence/
+examples/*/qa/.cache/
+# Reporting app: generated Prisma client and per-deployment storage.
+apps/reporting-api/src/generated/
+apps/reporting-api/storage/

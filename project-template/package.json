@@ -1,0 +1,31 @@
+{
+  "name": "{{project}}-qa",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "doctor": "qakit doctor --config qakit.config.yaml",
+    "suite": "qakit suite --config qakit.config.yaml",
+    "suite:list": "qakit suite --config qakit.config.yaml --list",
+    "skills": "qakit skills install --config qakit.config.yaml --target .claude/skills",
+    "pw:install": "playwright install chromium",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@qakit/cli": "file:{{kitDir}}/packages/cli",
+    "@qakit/core": "file:{{kitDir}}/packages/core",
+    "@qakit/mcp-api": "file:{{kitDir}}/packages/mcp-api",
+    "@qakit/mcp-ui": "file:{{kitDir}}/packages/mcp-ui",
+    "@qakit/runner": "file:{{kitDir}}/packages/runner",
+    "@qakit/ui": "file:{{kitDir}}/packages/ui"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "playwright": "1.62.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

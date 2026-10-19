@@ -1,0 +1,14 @@
+# One business domain for the API MCP server. `npx qakit api domains --config qakit.config.yaml`
+# bootstraps one file per OpenAPI tag; regroup them into real business domains.
+id: example
+displayName: Example
+description: Replace with a business domain of the application.
+apiSourceIds: [app]
+dependsOn: []
+tags: [example]
+status: active
+confidence: inferred
+capabilities:
+  - id: describe-api
+    summary: Read the API description
+    status: active

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "{{project}}-api": {
+      "command": "node",
+      "args": ["node_modules/@qakit/mcp-api/dist/bin.js", "--config", "qakit.config.yaml"]
+    },
+    "{{project}}-ui": {
+      "command": "node",
+      "args": ["node_modules/tsx/dist/cli.mjs", "node_modules/@qakit/mcp-ui/dist/bin.js", "--config", "qakit.config.yaml"]
+    }
+  }
+}

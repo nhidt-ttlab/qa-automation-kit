@@ -1,0 +1,17 @@
+id: order
+displayName: Order
+description: Customer orders for catalogue products.
+apiSourceIds: [shop]
+dependsOn: [customer, product]
+tags: [sales]
+status: active
+confidence: confirmed
+capabilities:
+  - id: create-order
+    summary: Create a new order
+    status: active
+    source: OrderController
+  - id: list-orders
+    summary: List / search orders
+    status: active
+    source: OrderController
